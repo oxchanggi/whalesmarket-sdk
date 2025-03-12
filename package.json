@@ -14,7 +14,7 @@
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
     "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
-    "prepare": "npm run build"
+    "prepare": "pnpm run build"
   },
   "peerDependencies": {
     "@coral-xyz/anchor": "^0.29.0",
@@ -90,6 +90,7 @@
     "lodash": "^4.17.21",
     "react": ">=16.8.0",
     "react-dom": ">=16.8.0",
+    "tslib": "^2.6.2",
     "wagmi": "^2.5.20"
   }
 }
