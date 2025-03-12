@@ -50,11 +50,12 @@ export class TokenSolana extends BaseToken<Connection, Transaction> {
   }
 
   /**
-   * Get the number of decimals for the token
+   * Fetch the number of decimals for the token (implementation for BaseToken)
    * @param address The token mint address
    * @returns The number of decimals
+   * @protected
    */
-  async getDecimals(address: string): Promise<number> {
+  protected async _fetchDecimals(address: string): Promise<number> {
     // Handle SOL case
     if (address === "So11111111111111111111111111111111111111112") {
       return 9; // SOL has 9 decimals
@@ -72,11 +73,12 @@ export class TokenSolana extends BaseToken<Connection, Transaction> {
   }
 
   /**
-   * Get the name of the token
+   * Fetch the name of the token (implementation for BaseToken)
    * @param address The token mint address
    * @returns The token name
+   * @protected
    */
-  async getName(address: string): Promise<string> {
+  protected async _fetchName(address: string): Promise<string> {
     // Handle SOL case
     if (address === "So11111111111111111111111111111111111111112") {
       return "Solana";
@@ -114,11 +116,12 @@ export class TokenSolana extends BaseToken<Connection, Transaction> {
   }
 
   /**
-   * Get the symbol of the token
+   * Fetch the symbol of the token (implementation for BaseToken)
    * @param address The token mint address
    * @returns The token symbol
+   * @protected
    */
-  async getSymbol(address: string): Promise<string> {
+  protected async _fetchSymbol(address: string): Promise<string> {
     // Handle SOL case
     if (address === "So11111111111111111111111111111111111111112") {
       return "SOL";
@@ -159,11 +162,12 @@ export class TokenSolana extends BaseToken<Connection, Transaction> {
   }
 
   /**
-   * Get the URI for the token metadata
+   * Fetch the URI for the token metadata (implementation for BaseToken)
    * @param address The token mint address
    * @returns The token URI
+   * @protected
    */
-  async getUri(address: string): Promise<string> {
+  protected async _fetchUri(address: string): Promise<string> {
     // Handle SOL case
     if (address === "So11111111111111111111111111111111111111112") {
       return "";

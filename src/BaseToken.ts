@@ -12,6 +12,30 @@ export abstract class BaseToken<P, T = any> {
   protected _provider: P;
 
   /**
+   * Cache for token decimals
+   * @protected
+   */
+  protected _decimalsCache: Map<string, number> = new Map();
+
+  /**
+   * Cache for token names
+   * @protected
+   */
+  protected _nameCache: Map<string, string> = new Map();
+
+  /**
+   * Cache for token symbols
+   * @protected
+   */
+  protected _symbolCache: Map<string, string> = new Map();
+
+  /**
+   * Cache for token URIs
+   * @protected
+   */
+  protected _uriCache: Map<string, string> = new Map();
+
+  /**
    * Constructor for BaseToken
    * @param provider The provider instance
    */
@@ -40,28 +64,100 @@ export abstract class BaseToken<P, T = any> {
    * @param address The token address or mint
    * @returns The number of decimals
    */
-  abstract getDecimals(address: string): Promise<number>;
+  async getDecimals(address: string): Promise<number> {
+    // Check if the value is in cache
+    if (this._decimalsCache.has(address)) {
+      return this._decimalsCache.get(address)!;
+    }
+
+    // If not in cache, fetch and store it
+    const decimals = await this._fetchDecimals(address);
+    this._decimalsCache.set(address, decimals);
+    return decimals;
+  }
+
+  /**
+   * Fetch the number of decimals for the token (to be implemented by subclasses)
+   * @param address The token address or mint
+   * @returns The number of decimals
+   * @protected
+   */
+  protected abstract _fetchDecimals(address: string): Promise<number>;
 
   /**
    * Get the name of the token
    * @param address The token address or mint
    * @returns The token name
    */
-  abstract getName(address: string): Promise<string>;
+  async getName(address: string): Promise<string> {
+    // Check if the value is in cache
+    if (this._nameCache.has(address)) {
+      return this._nameCache.get(address)!;
+    }
+
+    // If not in cache, fetch and store it
+    const name = await this._fetchName(address);
+    this._nameCache.set(address, name);
+    return name;
+  }
+
+  /**
+   * Fetch the name of the token (to be implemented by subclasses)
+   * @param address The token address or mint
+   * @returns The token name
+   * @protected
+   */
+  protected abstract _fetchName(address: string): Promise<string>;
 
   /**
    * Get the symbol of the token
    * @param address The token address or mint
    * @returns The token symbol
    */
-  abstract getSymbol(address: string): Promise<string>;
+  async getSymbol(address: string): Promise<string> {
+    // Check if the value is in cache
+    if (this._symbolCache.has(address)) {
+      return this._symbolCache.get(address)!;
+    }
+
+    // If not in cache, fetch and store it
+    const symbol = await this._fetchSymbol(address);
+    this._symbolCache.set(address, symbol);
+    return symbol;
+  }
+
+  /**
+   * Fetch the symbol of the token (to be implemented by subclasses)
+   * @param address The token address or mint
+   * @returns The token symbol
+   * @protected
+   */
+  protected abstract _fetchSymbol(address: string): Promise<string>;
 
   /**
    * Get the URI for the token metadata
    * @param address The token address or mint
    * @returns The token URI
    */
-  abstract getUri(address: string): Promise<string>;
+  async getUri(address: string): Promise<string> {
+    // Check if the value is in cache
+    if (this._uriCache.has(address)) {
+      return this._uriCache.get(address)!;
+    }
+
+    // If not in cache, fetch and store it
+    const uri = await this._fetchUri(address);
+    this._uriCache.set(address, uri);
+    return uri;
+  }
+
+  /**
+   * Fetch the URI for the token metadata (to be implemented by subclasses)
+   * @param address The token address or mint
+   * @returns The token URI
+   * @protected
+   */
+  protected abstract _fetchUri(address: string): Promise<string>;
 
   /**
    * Parse a token amount from human-readable to raw format
