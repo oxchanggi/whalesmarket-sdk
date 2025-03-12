@@ -19,6 +19,24 @@ print_warning() {
     echo -e "${YELLOW}Warning:${NC} $1"
 }
 
+# Parse command line arguments
+SKIP_TESTS=false
+SKIP_LINT=false
+for arg in "$@"; do
+    case $arg in
+        skip-test|--skip-test|-st)
+            SKIP_TESTS=true
+            print_warning "Tests will be skipped"
+            shift
+            ;;
+        skip-lint|--skip-lint|-sl)
+            SKIP_LINT=true
+            print_warning "Linting will be skipped"
+            shift
+            ;;
+    esac
+done
+
 # Function to check if command was successful
 check_status() {
     if [ $? -eq 0 ]; then
@@ -45,18 +63,22 @@ print_message "Installing dependencies..."
 pnpm install
 check_status "Dependencies installed" "Failed to install dependencies"
 
-# 3. Run tests if they exist
-if grep -q "\"test\"" package.json; then
+# 3. Run tests if they exist and not skipped
+if [ "$SKIP_TESTS" = false ] && grep -q "\"test\"" package.json; then
     print_message "Running tests..."
     pnpm test
     check_status "Tests completed" "Tests failed"
+elif [ "$SKIP_TESTS" = true ]; then
+    print_warning "Skipping tests as requested"
 fi
 
-# 4. Run linting if available
-if grep -q "\"lint\"" package.json; then
+# 4. Run linting if available and not skipped
+if [ "$SKIP_LINT" = false ] && grep -q "\"lint\"" package.json; then
     print_message "Running linting..."
     pnpm lint
     check_status "Linting completed" "Linting failed"
+elif [ "$SKIP_LINT" = true ]; then
+    print_warning "Skipping linting as requested"
 fi
 
 # 5. Build the package
@@ -114,12 +136,12 @@ case $version_choice in
 esac
 
 # Add and commit version changes if version was updated
-if [ $version_choice -ne 4 ]; then
-    print_message "Adding and committing version changes..."
-    git add package.json package-lock.json pnpm-lock.yaml
-    git commit -m "chore: bump version to $(node -p "require('./package.json').version")"
-    check_status "Version changes committed" "Failed to commit version changes"
-fi
+# if [ $version_choice -ne 4 ]; then
+    # print_message "Adding and committing version changes..."
+    # git add package.json package-lock.json pnpm-lock.yaml
+    # git commit -m "chore: bump version to $(node -p "require('./package.json').version")"
+    # check_status "Version changes committed" "Failed to commit version changes"
+# fi
 
 # 10. Confirm before publishing
 echo
