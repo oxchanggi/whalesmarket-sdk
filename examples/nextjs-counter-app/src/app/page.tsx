@@ -3,7 +3,7 @@
 import { useWhalesPreMarket } from "whales-sdk";
 import { useState, useEffect } from "react";
 
-// Định nghĩa kiểu dữ liệu cho market
+// Define data type for market
 interface Market {
   id: string;
   chain: string;
@@ -26,13 +26,13 @@ export default function Home() {
 
   useEffect(() => {
     if (isLoading) {
-      setMarketStatus("Đang tải thị trường...");
+      setMarketStatus("Loading markets...");
     } else if (error) {
-      setMarketStatus(`Lỗi: ${error.message}`);
+      setMarketStatus(`Error: ${error.message}`);
     } else if (isInitialized) {
-      setMarketStatus(`Đã khởi tạo ${markets.length} thị trường`);
+      setMarketStatus(`Initialized ${markets.length} markets`);
 
-      // Lấy ID của offer cuối cùng từ thị trường Solana
+      // Get the ID of the last offer from Solana market
       const fetchLastOfferId = async () => {
         try {
           if (markets.length > 0) {
@@ -40,7 +40,7 @@ export default function Home() {
             setLastOfferId(id);
           }
         } catch (err) {
-          console.error("Lỗi khi lấy ID offer cuối cùng:", err);
+          console.error("Error when getting last offer ID:", err);
         }
       };
 
@@ -60,9 +60,9 @@ export default function Home() {
       };
 
       const transaction = await createOffer("solana-market-1", params);
-      console.log("Đã tạo offer:", transaction);
+      console.log("Offer created:", transaction);
     } catch (error) {
-      console.error("Lỗi khi tạo offer:", error);
+      console.error("Error when creating offer:", error);
     }
   };
 
@@ -70,17 +70,18 @@ export default function Home() {
     <div>
       <h1>Whales PreMarket Example</h1>
       <p>
-        Đây là ví dụ về việc sử dụng WhalesPreMarketProvider và
-        useWhalesPreMarket hook từ thư viện whales-sdk trong ứng dụng Next.js.
+        This is an example of using WhalesPreMarketProvider and
+        useWhalesPreMarket hook from the whales-sdk library in a Next.js
+        application.
       </p>
 
       <div className="market-container">
-        <h2>Trạng thái thị trường</h2>
+        <h2>Market Status</h2>
         <p>{marketStatus}</p>
 
         {isInitialized && (
           <>
-            <p>Danh sách thị trường:</p>
+            <p>Market list:</p>
             <ul>
               {markets.map((market: Market) => (
                 <li key={market.id}>
@@ -89,9 +90,9 @@ export default function Home() {
               ))}
             </ul>
 
-            {lastOfferId !== null && <p>ID offer cuối cùng: {lastOfferId}</p>}
+            {lastOfferId !== null && <p>Last offer ID: {lastOfferId}</p>}
 
-            <button onClick={handleCreateOffer}>Tạo offer mới</button>
+            <button onClick={handleCreateOffer}>Create new offer</button>
           </>
         )}
       </div>
