@@ -238,7 +238,7 @@ export class MultiTokenManager {
     tokenAddress: string,
     spender: string,
     amount: number | string
-  ): Promise<any> {
+  ): Promise<ethers.PopulatedTransaction> {
     const token = this.getToken(managerId);
     return token.approve(tokenAddress, spender, amount);
   }
