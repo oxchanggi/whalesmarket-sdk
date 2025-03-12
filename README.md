@@ -111,3 +111,9 @@ npm test
 ## License
 
 MIT 
+
+## Publish
+
+```bash
+./publish.sh skip-test skip-lint
+```
