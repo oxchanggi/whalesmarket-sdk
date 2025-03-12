@@ -1,6 +1,6 @@
 "use client";
 
-import { useCount } from "react-lib-demo";
+import { useCount } from "whales-sdk";
 
 const CounterDisplay = () => {
   const { count, updateCount } = useCount();

@@ -1,5 +1,5 @@
 {
-  "name": "react-lib-demo",
+  "name": "whales-sdk",
   "version": "0.1.0",
   "description": "A React component library",
   "main": "dist/index.js",
@@ -76,7 +76,7 @@
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/react-lib-demo.git"
+    "url": "https://github.com/yourusername/whales-sdk.git"
   },
   "dependencies": {
     "@ethersproject/providers": "^5.8.0",

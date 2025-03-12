@@ -1,6 +1,6 @@
 "use client";
 
-import { CountProvider } from "react-lib-demo";
+import { CountProvider } from "whales-sdk";
 import CounterDisplay from "./CounterDisplay";
 
 const MultipleCounters = () => {

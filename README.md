@@ -5,15 +5,15 @@ A modern React component library with TypeScript support.
 ## Installation
 
 ```bash
-npm install react-lib-demo
+npm install whales-sdk
 # or
-yarn add react-lib-demo
+yarn add whales-sdk
 ```
 
 ## Usage
 
 ```jsx
-import { Button, Card, useToggle } from 'react-lib-demo';
+import { Button, Card, useToggle } from 'whales-sdk';
 
 function App() {
   const [isOpen, toggle] = useToggle(false);

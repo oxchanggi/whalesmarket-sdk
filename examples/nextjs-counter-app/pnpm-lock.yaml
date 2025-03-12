@@ -11835,7 +11835,7 @@ packages:
   file:../..(@coral-xyz/anchor@0.29.0)(@solana/spl-token@0.3.11)(@solana/wallet-adapter-react@0.15.35)(@solana/web3.js@1.87.6)(@tanstack/react-query@5.67.3)(@wallet-standard/react@0.1.4)(ethers@5.7.2)(lodash@4.17.21)(react-dom@18.2.0)(react@18.2.0)(wagmi@2.5.20):
     resolution: {directory: ../.., type: directory}
     id: file:../..
-    name: react-lib-demo
+    name: whales-sdk
     version: 0.1.0
     peerDependencies:
       '@coral-xyz/anchor': ^0.29.0
