@@ -299,55 +299,8 @@ export class TokenSolana extends BaseToken<Connection, Transaction> {
     tokenAddress: string,
     spender: string
   ): Promise<number> {
-    // Handle SOL case - SOL doesn't have allowances
-    if (tokenAddress === "So11111111111111111111111111111111111111112") {
-      return 0;
-    }
-
-    try {
-      const ownerPubkey = new PublicKey(owner);
-      const mintPubkey = new PublicKey(tokenAddress);
-      const spenderPubkey = new PublicKey(spender);
-
-      // Get token decimals
-      const decimals = await this.getDecimals(tokenAddress);
-
-      // Get associated token account
-      const tokenAccount = await getAssociatedTokenAddress(
-        mintPubkey,
-        ownerPubkey
-      );
-
-      try {
-        // Get account info
-        const accountInfo = await getAccount(this._provider, tokenAccount);
-
-        // Check if the delegate is set and matches the spender
-        if (
-          accountInfo.delegate !== null &&
-          accountInfo.delegate.equals(spenderPubkey) &&
-          accountInfo.delegatedAmount > BigInt(0)
-        ) {
-          const allowanceBN = new BN(accountInfo.delegatedAmount.toString());
-          return this._convertBNToNumber(allowanceBN, decimals);
-        }
-
-        return 0;
-      } catch (error) {
-        // Token account might not exist
-        console.error(
-          `Error getting token allowance for ${tokenAddress}:`,
-          error
-        );
-        return 0;
-      }
-    } catch (error) {
-      console.error(
-        `Error getting token allowance for ${tokenAddress}:`,
-        error
-      );
-      return 0;
-    }
+    // doesn't have allowances
+    return Number.MAX_SAFE_INTEGER;
   }
 
   /**
