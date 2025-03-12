@@ -55,10 +55,6 @@ const WhalesPreMarketContext = createContext<WhalesPreMarketContextValue>({
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
   approve: () =>
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
-  parseAmount: () =>
-    Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
-  formatAmount: () =>
-    Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
   getTokenInfo: () =>
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
   updateTokenProvider: () => {

@@ -79,6 +79,9 @@ export const WhalesPreMarketProvider = ({
               market.contractAddress,
               market.configAccountPubKey
             );
+
+            // Initialize Solana token manager for this market
+            tokens.addSolanaToken(market.id, connection);
           } else if (market.type === "evm") {
             const provider = new ethers.providers.JsonRpcProvider(market.rpc);
             await manager.addEVMMarket(
@@ -86,6 +89,9 @@ export const WhalesPreMarketProvider = ({
               market.contractAddress,
               provider
             );
+
+            // Initialize EVM token manager for this market
+            tokens.addEVMToken(market.id, provider);
           }
         }
 
@@ -106,9 +112,11 @@ export const WhalesPreMarketProvider = ({
       // Remove all markets when component unmounts
       manager.getAllMarketIds().forEach(({ id }) => {
         manager.removeMarket(id);
+        // Also remove token managers
+        tokens.removeToken(id);
       });
     };
-  }, [markets, manager]);
+  }, [markets, manager, tokens]);
 
   // Set EVM signer when walletClient changes
   useEffect(() => {
@@ -135,12 +143,15 @@ export const WhalesPreMarketProvider = ({
         // Set the signer for this market
         market.setSigner(signer);
 
+        // Update the token provider as well
+        tokens.updateProvider(id, provider);
+
         console.log(`Set signer for EVM market: ${id}`);
       } catch (err) {
         console.error(`Failed to set signer for market ${id}:`, err);
       }
     }
-  }, [walletClient, isInitialized, manager]);
+  }, [walletClient, isInitialized, manager, tokens]);
 
   // Set Solana signer when connectorSol changes
   useEffect(() => {
@@ -159,93 +170,32 @@ export const WhalesPreMarketProvider = ({
         // Set the wallet for this market
         market.setSigner(connectorSol);
 
+        // Find the market configuration to get the RPC URL
+        const marketConfig = markets.find(
+          (m) => m.id === id && m.type === "solana"
+        );
+        if (marketConfig) {
+          // Create a new connection with the same RPC URL
+          const connection = new Connection(marketConfig.rpc);
+          tokens.updateProvider(id, connection);
+        }
+
         console.log(`Set wallet for Solana market: ${id}`);
       } catch (err) {
         console.error(`Failed to set wallet for market ${id}:`, err);
       }
     }
-  }, [connectorSol, isInitialized, manager]);
-
-  // Token functions implementation
-  const getDecimals = (
-    tokenId: string,
-    tokenAddress: string
-  ): Promise<number> => {
-    // Implementation will depend on your token management system
-    return Promise.resolve(18); // Default for most ERC20 tokens
-  };
-
-  const getName = (tokenId: string, tokenAddress: string): Promise<string> => {
-    return Promise.resolve(""); // Placeholder implementation
-  };
-
-  const getSymbol = (
-    tokenId: string,
-    tokenAddress: string
-  ): Promise<string> => {
-    return Promise.resolve(""); // Placeholder implementation
-  };
-
-  const getUri = (tokenId: string, tokenAddress: string): Promise<string> => {
-    return Promise.resolve(""); // Placeholder implementation
-  };
-
-  const getBalance = (
-    tokenId: string,
-    owner: string,
-    tokenAddress: string
-  ): Promise<number> => {
-    return Promise.resolve(0); // Placeholder implementation
-  };
-
-  const getAllowance = (
-    tokenId: string,
-    owner: string,
-    tokenAddress: string,
-    spender: string
-  ): Promise<number> => {
-    return Promise.resolve(0); // Placeholder implementation
-  };
-
-  const approve = (
-    tokenId: string,
-    tokenAddress: string,
-    spender: string,
-    amount: number | string
-  ): Promise<ethers.PopulatedTransaction | Transaction> => {
-    return Promise.resolve({} as ethers.PopulatedTransaction | Transaction); // Placeholder implementation
-  };
-
-  const parseAmount = (
-    tokenId: string,
-    tokenAddress: string,
-    amount: number | string
-  ): Promise<ethers.BigNumber | BN> => {
-    return Promise.resolve(ethers.BigNumber.from(0)); // Placeholder implementation
-  };
-
-  const formatAmount = (
-    tokenId: string,
-    tokenAddress: string,
-    amount: ethers.BigNumber | BN
-  ): Promise<string> => {
-    return Promise.resolve("0"); // Placeholder implementation
-  };
+  }, [connectorSol, isInitialized, manager, tokens, markets]);
 
   const getTokenInfo = (tokenId: string, tokenAddress: string) => {
-    return Promise.resolve({
-      address: tokenAddress,
-      decimals: 18,
-      name: "",
-      symbol: "",
-    }); // Placeholder implementation
+    return tokens.getTokenInfo(tokenId, tokenAddress);
   };
 
   const updateTokenProvider = (
     tokenId: string,
     provider: Connection | ethers.providers.Provider
   ): void => {
-    // Placeholder implementation
+    tokens.updateProvider(tokenId, provider);
   };
 
   // Generic function to execute batch operations
@@ -255,7 +205,13 @@ export const WhalesPreMarketProvider = ({
       operation: (token: any) => Promise<T>;
     }>
   ): Promise<T[]> => {
-    return Promise.resolve([] as T[]); // Placeholder implementation
+    // Convert the operations to the format expected by MultiTokenManager
+    const mappedOperations = operations.map((op) => ({
+      managerId: op.tokenId,
+      operation: op.operation,
+    }));
+
+    return tokens.executeBatch(mappedOperations);
   };
 
   // Context value
@@ -290,15 +246,28 @@ export const WhalesPreMarketProvider = ({
     ) => manager.signAndSendTransaction(marketId, tx, callbacks),
 
     // Token functions
-    getDecimals,
-    getName,
-    getSymbol,
-    getUri,
-    getBalance,
-    getAllowance,
-    approve,
-    parseAmount,
-    formatAmount,
+    getDecimals: (tokenId: string, tokenAddress: string) =>
+      tokens.getDecimals(tokenId, tokenAddress),
+    getName: (tokenId: string, tokenAddress: string) =>
+      tokens.getName(tokenId, tokenAddress),
+    getSymbol: (tokenId: string, tokenAddress: string) =>
+      tokens.getSymbol(tokenId, tokenAddress),
+    getUri: (tokenId: string, tokenAddress: string) =>
+      tokens.getUri(tokenId, tokenAddress),
+    getBalance: (tokenId: string, owner: string, tokenAddress: string) =>
+      tokens.getBalance(tokenId, owner, tokenAddress),
+    getAllowance: (
+      tokenId: string,
+      owner: string,
+      tokenAddress: string,
+      spender: string
+    ) => tokens.getAllowance(tokenId, owner, tokenAddress, spender),
+    approve: (
+      tokenId: string,
+      tokenAddress: string,
+      spender: string,
+      amount: number | string
+    ) => tokens.approve(tokenId, tokenAddress, spender, amount),
     getTokenInfo,
     updateTokenProvider,
     executeBatch,

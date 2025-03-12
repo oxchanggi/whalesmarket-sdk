@@ -13,7 +13,6 @@ import {
 } from "../BasePreMarket";
 import { Transaction } from "@solana/web3.js";
 import { TokenInfo } from "../BaseToken";
-import BN from "bn.js";
 import { TokenIdentifier } from "../MultiTokenManager";
 
 /**
@@ -92,16 +91,7 @@ export interface WhalesPreMarketContextValue {
     spender: string,
     amount: number | string
   ) => Promise<ethers.PopulatedTransaction | Transaction>;
-  parseAmount: (
-    tokenId: string,
-    tokenAddress: string,
-    amount: number | string
-  ) => Promise<ethers.BigNumber | BN>;
-  formatAmount: (
-    tokenId: string,
-    tokenAddress: string,
-    amount: ethers.BigNumber | BN
-  ) => Promise<string>;
+
   getTokenInfo: (tokenId: string, tokenAddress: string) => Promise<TokenInfo>;
   updateTokenProvider: (
     tokenId: string,
