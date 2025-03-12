@@ -9,10 +9,17 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/wallet-adapter-wallets": "^0.19.23",
+    "@solana/web3.js": "^1.87.6",
+    "@tanstack/react-query": "^5.67.3",
+    "ethers": "^5.7.2",
     "next": "^14.0.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
-    "react-lib-demo": "file:../../"
+    "rpc-websockets": "7.10.0",
+    "wagmi": "2.5.20",
+    "whales-sdk": "file:../../"
   },
   "devDependencies": {
     "@types/node": "^20.8.9",
@@ -21,5 +28,8 @@
     "eslint": "^8.52.0",
     "eslint-config-next": "^14.0.0",
     "typescript": "^5.2.2"
+  },
+  "overrides": {
+    "rpc-websockets": "7.10.0"
   }
 }

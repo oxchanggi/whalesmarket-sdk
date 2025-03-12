@@ -1,60 +1,53 @@
-# Next.js Counter App Example
+# Whales PreMarket Next.js Example
 
-This is an example Next.js application demonstrating how to use the `react-lib-demo` library with its CountProvider and useCount hook.
+Đây là ứng dụng ví dụ sử dụng thư viện Whales PreMarket SDK với Next.js.
 
-## Features
-
-- Basic counter example using CountProvider and useCount
-- Multiple independent counters example
-- Modern UI with responsive design
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 16.8.0 or later
-- npm or yarn
-
-### Installation
-
-1. First, build the main library:
+## Cài đặt
 
 ```bash
-# From the root of the project
+# Cài đặt dependencies
 npm install
-npm run build
+# hoặc
+yarn install
+# hoặc
+pnpm install
 ```
 
-2. Then, install the dependencies for this example:
+## Cấu hình
+
+Trước khi chạy ứng dụng, bạn cần cập nhật các thông tin cấu hình trong file `src/app/layout.tsx`:
+
+1. Cập nhật địa chỉ RPC cho Solana (hiện đang sử dụng devnet)
+2. Cập nhật địa chỉ contract cho Solana (`YOUR_PROGRAM_ID`)
+3. Cập nhật địa chỉ RPC cho EVM (hiện đang sử dụng Infura)
+4. Cập nhật địa chỉ contract cho EVM (`0xYourContractAddress`)
+
+## Chạy ứng dụng
 
 ```bash
-# From the examples/nextjs-counter-app directory
-npm install
-```
-
-### Running the Development Server
-
-```bash
+# Chạy ở môi trường development
 npm run dev
+# hoặc
+yarn dev
+# hoặc
+pnpm dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Mở [http://localhost:3000](http://localhost:3000) trong trình duyệt để xem ứng dụng.
 
-## How It Works
+## Cấu trúc dự án
 
-This example demonstrates:
+- `src/app/layout.tsx`: Cấu hình WhalesPreMarketProvider và các provider cần thiết
+- `src/app/page.tsx`: Sử dụng hook useWhalesPreMarket để tương tác với thị trường
 
-1. How to import and use the CountProvider from the library
-2. How to use the useCount hook to access and update the count state
-3. How to create multiple independent counters using separate CountProvider instances
+## Tính năng
 
-## Learn More
+- Hiển thị danh sách thị trường đã cấu hình
+- Hiển thị ID của offer cuối cùng
+- Tạo offer mới
 
-To learn more about Next.js, take a look at the following resources:
+## Lưu ý
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-## License
-
-MIT 
+- Ứng dụng này yêu cầu kết nối ví Solana (như Phantom) và ví EVM (thông qua Wagmi)
+- Đảm bảo bạn đã cài đặt các extension ví cần thiết trong trình duyệt
+- Các giao dịch thực hiện trên testnet/devnet sẽ không ảnh hưởng đến tài sản thật 
