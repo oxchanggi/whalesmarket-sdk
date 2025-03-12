@@ -22,8 +22,11 @@ export const WhalesPreMarketProvider = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
-  const { data: walletClient, isError: isWagmiError } = useWalletClient();
-  console.log("🚀 ~ isWagmiError:", isWagmiError);
+  const {
+    data: walletClient,
+    isError: isWagmiError,
+    error: wagmi,
+  } = useWalletClient();
   const connectorSol = useWallet();
 
   // Check if the component is wrapped in the required providers

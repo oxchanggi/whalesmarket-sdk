@@ -32,7 +32,7 @@ dependencies:
     specifier: 2.5.20
     version: 2.5.20(@tanstack/react-query@5.67.3)(@types/react@18.2.33)(react-dom@18.2.0)(react-native@0.78.0)(react@18.2.0)(typescript@5.2.2)(viem@2.23.10)
   whales-sdk:
-    specifier: file:../../
+    specifier: file:../..
     version: file:../..(@coral-xyz/anchor@0.29.0)(@solana/spl-token@0.3.11)(@solana/wallet-adapter-react@0.15.35)(@solana/web3.js@1.87.6)(@tanstack/react-query@5.67.3)(@wallet-standard/react@0.1.4)(ethers@5.7.2)(lodash@4.17.21)(react-dom@18.2.0)(react@18.2.0)(wagmi@2.5.20)
 
 devDependencies:

@@ -19,7 +19,7 @@
     "react-dom": "^18.2.0",
     "rpc-websockets": "7.10.0",
     "wagmi": "2.5.20",
-    "whales-sdk": "file:../../"
+    "whales-sdk": "file:../.."
   },
   "devDependencies": {
     "@types/node": "^20.8.9",
