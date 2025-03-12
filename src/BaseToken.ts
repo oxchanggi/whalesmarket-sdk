@@ -4,6 +4,17 @@
  * @template P The provider type (Solana Connection or ethers.Provider)
  * @template T The transaction type (Solana Transaction or ethers.PopulatedTransaction)
  */
+
+/**
+ * Interface for token information
+ */
+export interface TokenInfo {
+  decimals?: number;
+  name?: string;
+  symbol?: string;
+  uri?: string;
+}
+
 export abstract class BaseToken<P, T = any> {
   /**
    * The provider instance
@@ -12,28 +23,10 @@ export abstract class BaseToken<P, T = any> {
   protected _provider: P;
 
   /**
-   * Cache for token decimals
+   * Cache for token information
    * @protected
    */
-  protected _decimalsCache: Map<string, number> = new Map();
-
-  /**
-   * Cache for token names
-   * @protected
-   */
-  protected _nameCache: Map<string, string> = new Map();
-
-  /**
-   * Cache for token symbols
-   * @protected
-   */
-  protected _symbolCache: Map<string, string> = new Map();
-
-  /**
-   * Cache for token URIs
-   * @protected
-   */
-  protected _uriCache: Map<string, string> = new Map();
+  protected _tokenInfoCache: Map<string, TokenInfo> = new Map();
 
   /**
    * Constructor for BaseToken
@@ -66,13 +59,14 @@ export abstract class BaseToken<P, T = any> {
    */
   async getDecimals(address: string): Promise<number> {
     // Check if the value is in cache
-    if (this._decimalsCache.has(address)) {
-      return this._decimalsCache.get(address)!;
+    const tokenInfo = this._tokenInfoCache.get(address);
+    if (tokenInfo?.decimals !== undefined) {
+      return tokenInfo.decimals;
     }
 
     // If not in cache, fetch and store it
     const decimals = await this._fetchDecimals(address);
-    this._decimalsCache.set(address, decimals);
+    this._updateTokenInfo(address, { decimals });
     return decimals;
   }
 
@@ -91,13 +85,14 @@ export abstract class BaseToken<P, T = any> {
    */
   async getName(address: string): Promise<string> {
     // Check if the value is in cache
-    if (this._nameCache.has(address)) {
-      return this._nameCache.get(address)!;
+    const tokenInfo = this._tokenInfoCache.get(address);
+    if (tokenInfo?.name !== undefined) {
+      return tokenInfo.name;
     }
 
     // If not in cache, fetch and store it
     const name = await this._fetchName(address);
-    this._nameCache.set(address, name);
+    this._updateTokenInfo(address, { name });
     return name;
   }
 
@@ -116,13 +111,14 @@ export abstract class BaseToken<P, T = any> {
    */
   async getSymbol(address: string): Promise<string> {
     // Check if the value is in cache
-    if (this._symbolCache.has(address)) {
-      return this._symbolCache.get(address)!;
+    const tokenInfo = this._tokenInfoCache.get(address);
+    if (tokenInfo?.symbol !== undefined) {
+      return tokenInfo.symbol;
     }
 
     // If not in cache, fetch and store it
     const symbol = await this._fetchSymbol(address);
-    this._symbolCache.set(address, symbol);
+    this._updateTokenInfo(address, { symbol });
     return symbol;
   }
 
@@ -141,14 +137,26 @@ export abstract class BaseToken<P, T = any> {
    */
   async getUri(address: string): Promise<string> {
     // Check if the value is in cache
-    if (this._uriCache.has(address)) {
-      return this._uriCache.get(address)!;
+    const tokenInfo = this._tokenInfoCache.get(address);
+    if (tokenInfo?.uri !== undefined) {
+      return tokenInfo.uri;
     }
 
     // If not in cache, fetch and store it
     const uri = await this._fetchUri(address);
-    this._uriCache.set(address, uri);
+    this._updateTokenInfo(address, { uri });
     return uri;
+  }
+
+  /**
+   * Update token information in the cache
+   * @param address The token address or mint
+   * @param info The token information to update
+   * @private
+   */
+  private _updateTokenInfo(address: string, info: Partial<TokenInfo>): void {
+    const existingInfo = this._tokenInfoCache.get(address) || {};
+    this._tokenInfoCache.set(address, { ...existingInfo, ...info });
   }
 
   /**
