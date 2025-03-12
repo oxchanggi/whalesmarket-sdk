@@ -44,3 +44,67 @@ export function parseTokenAmount(
 ): ethers.BigNumber {
   return ethers.utils.parseUnits(value.toString(), decimals);
 }
+
+/**
+ * Get the name of a token
+ * @param tokenAddress The address of the token
+ * @param provider The ethers provider
+ * @returns The name of the token
+ */
+export async function getTokenName(
+  tokenAddress: string,
+  provider: ethers.providers.Provider
+): Promise<string> {
+  // Handle ETH case
+  if (tokenAddress === ethers.constants.AddressZero) {
+    return "Ethereum";
+  }
+
+  // Create token contract instance with minimal ABI
+  const tokenContract = new ethers.Contract(
+    tokenAddress,
+    ["function name() view returns (string)"],
+    provider
+  );
+
+  try {
+    // Get token name
+    const name = await tokenContract.name();
+    return name;
+  } catch (error) {
+    console.error(`Error getting name for token ${tokenAddress}:`, error);
+    return "Unknown Token";
+  }
+}
+
+/**
+ * Get the symbol of a token
+ * @param tokenAddress The address of the token
+ * @param provider The ethers provider
+ * @returns The symbol of the token
+ */
+export async function getTokenSymbol(
+  tokenAddress: string,
+  provider: ethers.providers.Provider
+): Promise<string> {
+  // Handle ETH case
+  if (tokenAddress === ethers.constants.AddressZero) {
+    return "ETH";
+  }
+
+  // Create token contract instance with minimal ABI
+  const tokenContract = new ethers.Contract(
+    tokenAddress,
+    ["function symbol() view returns (string)"],
+    provider
+  );
+
+  try {
+    // Get token symbol
+    const symbol = await tokenContract.symbol();
+    return symbol;
+  } catch (error) {
+    console.error(`Error getting symbol for token ${tokenAddress}:`, error);
+    return "UNKNOWN";
+  }
+}

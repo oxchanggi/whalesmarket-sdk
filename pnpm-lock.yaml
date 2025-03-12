@@ -7,6 +7,9 @@ dependencies:
   '@ethersproject/providers':
     specifier: ^5.8.0
     version: 5.8.0
+  '@metaplex-foundation/mpl-token-metadata':
+    specifier: ^3.4.0
+    version: 3.4.0(@metaplex-foundation/umi@1.1.1)
   '@solana/spl-token':
     specifier: ^0.3.9
     version: 0.3.9(@solana/web3.js@1.98.0)
@@ -22,6 +25,9 @@ dependencies:
   '@wallet-standard/react':
     specifier: ^0.1.4
     version: 0.1.4(react-dom@18.2.0)(react@18.2.0)
+  bn.js:
+    specifier: ^5.2.1
+    version: 5.2.1
   ethers:
     specifier: ^5.8.0
     version: 5.8.0
@@ -75,6 +81,9 @@ devDependencies:
   '@testing-library/react':
     specifier: ^13.3.0
     version: 13.3.0(react-dom@18.2.0)(react@18.2.0)
+  '@types/bn.js':
+    specifier: ^5.1.6
+    version: 5.1.6
   '@types/jest':
     specifier: ^28.1.4
     version: 28.1.4
@@ -2982,6 +2991,67 @@ packages:
       - supports-color
     dev: false
 
+  /@metaplex-foundation/mpl-token-metadata@3.4.0(@metaplex-foundation/umi@1.1.1):
+    resolution: {integrity: sha512-AxBAYCK73JWxY3g9//z/C9krkR0t1orXZDknUPS4+GjwGH2vgPfsk04yfZ31Htka2AdS9YE/3wH7sMUBHKn9Rg==}
+    peerDependencies:
+      '@metaplex-foundation/umi': '>= 0.8.2 <= 1'
+    dependencies:
+      '@metaplex-foundation/mpl-toolbox': 0.10.0(@metaplex-foundation/umi@1.1.1)
+      '@metaplex-foundation/umi': 1.1.1
+    dev: false
+
+  /@metaplex-foundation/mpl-toolbox@0.10.0(@metaplex-foundation/umi@1.1.1):
+    resolution: {integrity: sha512-84KD1L5cFyw5xnntHwL4uPwfcrkKSiwuDeypiVr92qCUFuF3ZENa2zlFVPu+pQcjTlod2LmEX3MhBmNjRMpdKg==}
+    peerDependencies:
+      '@metaplex-foundation/umi': '>= 0.8.2 <= 1'
+    dependencies:
+      '@metaplex-foundation/umi': 1.1.1
+    dev: false
+
+  /@metaplex-foundation/umi-options@1.1.1:
+    resolution: {integrity: sha512-oOvbnVbF6WIMM4Elr0t7DH+zXkTGuytqUdODuZlsCc8YOHHspn76z+Bl+fMfyYQ/Y1oxVAhjVii9MVdSiUMb7Q==}
+    dev: false
+
+  /@metaplex-foundation/umi-public-keys@1.1.1:
+    resolution: {integrity: sha512-wboy48lr9vR18IPum9mZ1nSk2bNDfTXKJAon26p6xDZzl3ywGZijOZJwSaDsjPwokKp1Sot1eXd8nrwIdg1Abg==}
+    dependencies:
+      '@metaplex-foundation/umi-serializers-encodings': 1.1.1
+    dev: false
+
+  /@metaplex-foundation/umi-serializers-core@1.1.1:
+    resolution: {integrity: sha512-w+0hiOA9tuD7R2EthNiMB01QEeBvFs5Jeegnqjr7z0pfmxWYu2n1J1HkJJcqaPjqyilJ1aOuPZ8lhL3UNhBDjA==}
+    dev: false
+
+  /@metaplex-foundation/umi-serializers-encodings@1.1.1:
+    resolution: {integrity: sha512-wDi2MKgfLN9jv6FFxFFkqFYVuRFuaM4HIpKM7Hww6Cdd2zZhbWUatULIfq5aebzxjjNMdjvLPW1+g3BEZPrVsA==}
+    dependencies:
+      '@metaplex-foundation/umi-serializers-core': 1.1.1
+    dev: false
+
+  /@metaplex-foundation/umi-serializers-numbers@1.1.1:
+    resolution: {integrity: sha512-OkY7k6m9nusBPcFaUulmaw1fs7icc+WUOaq6XK9NXMqHCMRPYOTvr3yLG9iCUI+cRbhpphddtRKFAgPFYoz0mw==}
+    dependencies:
+      '@metaplex-foundation/umi-serializers-core': 1.1.1
+    dev: false
+
+  /@metaplex-foundation/umi-serializers@1.1.1:
+    resolution: {integrity: sha512-bR3DwA+6N1GMMToZw3C9DvuRQQFYtFOIJRnBDXhBBezpzz2S/imoEMZRaHjWCNdNrZy4x3LZjqcgmO9ynPLpXQ==}
+    dependencies:
+      '@metaplex-foundation/umi-options': 1.1.1
+      '@metaplex-foundation/umi-public-keys': 1.1.1
+      '@metaplex-foundation/umi-serializers-core': 1.1.1
+      '@metaplex-foundation/umi-serializers-encodings': 1.1.1
+      '@metaplex-foundation/umi-serializers-numbers': 1.1.1
+    dev: false
+
+  /@metaplex-foundation/umi@1.1.1:
+    resolution: {integrity: sha512-8jHyTzcaUpNEeAgeSfOuYrJBGiT/iegF5V5kiZ0KGqvgnLTZpsf8eToegQrS0xLA7GZezRDSMaBGWVZZxoodTQ==}
+    dependencies:
+      '@metaplex-foundation/umi-options': 1.1.1
+      '@metaplex-foundation/umi-public-keys': 1.1.1
+      '@metaplex-foundation/umi-serializers': 1.1.1
+    dev: false
+
   /@motionone/animation@10.18.0:
     resolution: {integrity: sha512-9z2p5GFGCm0gBsZbi8rVMOAJCtw1WqBTIPw3ozk06gDvZInBPIsQcHgYogEJ4yuHJ+akuW8g1SEIOpTOvYs8hw==}
     dependencies:
@@ -5122,6 +5192,12 @@ packages:
     resolution: {integrity: sha512-r1bzfrm0tomOI8g1SzvCaQHo6Lcv6zu0EA+W2kHrt8dyrHQxGzBBL4kdkzIS+jBMV+EYcMAEAqXqYaLJq5rOZg==}
     dependencies:
       '@babel/types': 7.26.10
+
+  /@types/bn.js@5.1.6:
+    resolution: {integrity: sha512-Xh8vSwUeMKeYYrj3cX4lGQgFSF/N03r+tv4AiLl1SucqV+uTQpxRcnM8AkXKHwYP9ZPXOYXRr2KPXpVlIvqh9w==}
+    dependencies:
+      '@types/node': 22.13.10
+    dev: true
 
   /@types/connect@3.4.38:
     resolution: {integrity: sha512-K6uROf1LD88uDQqJCktA4yzL1YYAK6NgfsI0v/mTgyPKWsX1CnJ0XPSDhViejru1GcRkLWb8RlzFYJRqGUbaug==}
