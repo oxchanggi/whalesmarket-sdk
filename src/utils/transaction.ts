@@ -76,7 +76,7 @@ export const getTransactionStatus = async (
  */
 export const signAndSendTransaction = async (
   tx: ethers.PopulatedTransaction,
-  wallet: ethers.Wallet | any,
+  wallet: ethers.Wallet | ethers.Signer,
   getRandomProvider: () => ethers.providers.Provider,
   {
     onSubmit,
@@ -115,17 +115,16 @@ export const signAndSendTransaction = async (
     let txHash: string;
 
     // Check if wallet is an object with the expected Wallet methods
-    if (
-      typeof wallet === "object" &&
-      wallet !== null &&
-      "sendTransaction" in wallet
-    ) {
+    if (wallet instanceof ethers.Wallet) {
       const connectedWallet = wallet.connect(getRandomProvider());
       const signedTx = await connectedWallet.sendTransaction(transaction);
       txHash = signedTx.hash;
     } else {
       // Assume it's a SendTransactionMutateAsync function
-      txHash = await wallet(transaction);
+      const signedTx = await(wallet as ethers.Signer).sendTransaction(
+        transaction
+      );
+      txHash = signedTx.hash;
     }
 
     // Call onSubmit callback if provided

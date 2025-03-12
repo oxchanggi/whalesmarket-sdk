@@ -3,12 +3,14 @@
 import { useWhalesPreMarket } from "whales-sdk";
 import { useState, useEffect } from "react";
 import { ConnectWallet } from "../components/ConnectWallet";
+import { ethers } from "ethers";
 
 // Define data type for market
 interface Market {
   id: string;
   chain: string;
 }
+const marketId = "evm-market-1";
 
 export default function Home() {
   const {
@@ -20,6 +22,7 @@ export default function Home() {
     createOffer,
     getOffer,
     getLastOfferId,
+    signAndSendTransaction,
   } = useWhalesPreMarket();
 
   const [marketStatus, setMarketStatus] = useState<string>("Loading...");
@@ -37,7 +40,7 @@ export default function Home() {
       const fetchLastOfferId = async () => {
         try {
           if (markets.length > 0) {
-            const id = await getLastOfferId("solana-market-1");
+            const id = await getLastOfferId(marketId);
             setLastOfferId(id);
           }
         } catch (err) {
@@ -50,18 +53,39 @@ export default function Home() {
   }, [isLoading, error, isInitialized, markets, getLastOfferId]);
 
   const handleCreateOffer = async () => {
+    const market = getMarket(marketId);
+    console.log("Market:", market);
+
     try {
       const params = {
         offerType: 0, // Buy offer
-        tokenId: "token-123",
+        tokenId:
+          "0x3439333600000000000000000000000000000000000000000000000000000000",
         amount: 10,
-        value: 100,
-        exToken: "0xTokenAddress",
+        value: 0.0001,
+        exToken: "0x0000000000000000000000000000000000000000",
         fullMatch: false,
       };
 
-      const transaction = await createOffer("solana-market-1", params);
+      const transaction = (await createOffer(
+        marketId,
+        params
+      )) as ethers.PopulatedTransaction;
       console.log("Offer created:", transaction);
+
+      transaction.gasLimit = ethers.BigNumber.from(250000);
+
+      await signAndSendTransaction(marketId, transaction, {
+        onSubmit: (tx) => {
+          console.log("Transaction sent:", tx);
+        },
+        onFinally: (tx) => {
+          console.log("Transaction success:", tx);
+        },
+        onError: (error) => {
+          console.error("Error when sending transaction:", error);
+        },
+      });
     } catch (error) {
       console.error("Error when creating offer:", error);
     }
