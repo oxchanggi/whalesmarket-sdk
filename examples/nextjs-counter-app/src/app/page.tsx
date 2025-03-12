@@ -2,6 +2,7 @@
 
 import { useWhalesPreMarket } from "whales-sdk";
 import { useState, useEffect } from "react";
+import { ConnectWallet } from "../components/ConnectWallet";
 
 // Define data type for market
 interface Market {
@@ -68,7 +69,11 @@ export default function Home() {
 
   return (
     <div>
-      <h1>Whales PreMarket Example</h1>
+      <header className="app-header">
+        <h1>Whales PreMarket Example</h1>
+        <ConnectWallet />
+      </header>
+
       <p>
         This is an example of using WhalesPreMarketProvider and
         useWhalesPreMarket hook from the whales-sdk library in a Next.js
