@@ -8,7 +8,12 @@ import { useWallet } from "@solana/wallet-adapter-react";
 import { MultiPreMarketManager } from "../MultiPreMarketManager";
 import { CreateOfferParams, TransactionCallbacks } from "../BasePreMarket";
 import WhalesPreMarketContext from "./WhalesPreMarketContext";
-import { WhalesPreMarketProviderProps } from "./types";
+import {
+  WhalesPreMarketProviderProps,
+  WhalesPreMarketContextValue,
+} from "./types";
+import BN from "bn.js";
+import { MultiTokenManager } from "../MultiTokenManager";
 
 /**
  * Provider component for WhalesPreMarket
@@ -22,6 +27,7 @@ export const WhalesPreMarketProvider = ({
   const [isInitialized, setIsInitialized] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
+  const [tokens] = useState(new MultiTokenManager());
   const {
     data: walletClient,
     isError: isWagmiError,
@@ -160,9 +166,102 @@ export const WhalesPreMarketProvider = ({
     }
   }, [connectorSol, isInitialized, manager]);
 
+  // Token functions implementation
+  const getDecimals = (
+    tokenId: string,
+    tokenAddress: string
+  ): Promise<number> => {
+    // Implementation will depend on your token management system
+    return Promise.resolve(18); // Default for most ERC20 tokens
+  };
+
+  const getName = (tokenId: string, tokenAddress: string): Promise<string> => {
+    return Promise.resolve(""); // Placeholder implementation
+  };
+
+  const getSymbol = (
+    tokenId: string,
+    tokenAddress: string
+  ): Promise<string> => {
+    return Promise.resolve(""); // Placeholder implementation
+  };
+
+  const getUri = (tokenId: string, tokenAddress: string): Promise<string> => {
+    return Promise.resolve(""); // Placeholder implementation
+  };
+
+  const getBalance = (
+    tokenId: string,
+    owner: string,
+    tokenAddress: string
+  ): Promise<number> => {
+    return Promise.resolve(0); // Placeholder implementation
+  };
+
+  const getAllowance = (
+    tokenId: string,
+    owner: string,
+    tokenAddress: string,
+    spender: string
+  ): Promise<number> => {
+    return Promise.resolve(0); // Placeholder implementation
+  };
+
+  const approve = (
+    tokenId: string,
+    tokenAddress: string,
+    spender: string,
+    amount: number | string
+  ): Promise<ethers.PopulatedTransaction | Transaction> => {
+    return Promise.resolve({} as ethers.PopulatedTransaction | Transaction); // Placeholder implementation
+  };
+
+  const parseAmount = (
+    tokenId: string,
+    tokenAddress: string,
+    amount: number | string
+  ): Promise<ethers.BigNumber | BN> => {
+    return Promise.resolve(ethers.BigNumber.from(0)); // Placeholder implementation
+  };
+
+  const formatAmount = (
+    tokenId: string,
+    tokenAddress: string,
+    amount: ethers.BigNumber | BN
+  ): Promise<string> => {
+    return Promise.resolve("0"); // Placeholder implementation
+  };
+
+  const getTokenInfo = (tokenId: string, tokenAddress: string) => {
+    return Promise.resolve({
+      address: tokenAddress,
+      decimals: 18,
+      name: "",
+      symbol: "",
+    }); // Placeholder implementation
+  };
+
+  const updateTokenProvider = (
+    tokenId: string,
+    provider: Connection | ethers.providers.Provider
+  ): void => {
+    // Placeholder implementation
+  };
+
+  // Generic function to execute batch operations
+  const executeBatch = async <T,>(
+    operations: Array<{
+      tokenId: string;
+      operation: (token: any) => Promise<T>;
+    }>
+  ): Promise<T[]> => {
+    return Promise.resolve([] as T[]); // Placeholder implementation
+  };
+
   // Context value
-  const contextValue = {
+  const contextValue: WhalesPreMarketContextValue = {
     markets: manager.getAllMarketIds(),
+    tokens: tokens.getAllTokenIds(),
     isInitialized,
     isLoading,
     error,
@@ -189,6 +288,20 @@ export const WhalesPreMarketProvider = ({
       tx: ethers.PopulatedTransaction | Transaction,
       callbacks?: TransactionCallbacks
     ) => manager.signAndSendTransaction(marketId, tx, callbacks),
+
+    // Token functions
+    getDecimals,
+    getName,
+    getSymbol,
+    getUri,
+    getBalance,
+    getAllowance,
+    approve,
+    parseAmount,
+    formatAmount,
+    getTokenInfo,
+    updateTokenProvider,
+    executeBatch,
   };
 
   return (

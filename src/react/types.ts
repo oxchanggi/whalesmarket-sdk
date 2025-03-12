@@ -12,6 +12,9 @@ import {
   TransactionResult,
 } from "../BasePreMarket";
 import { Transaction } from "@solana/web3.js";
+import { TokenInfo } from "../BaseToken";
+import BN from "bn.js";
+import { TokenIdentifier } from "../MultiTokenManager";
 
 /**
  * Market configuration for provider
@@ -29,9 +32,12 @@ export interface MarketConfig {
  */
 export interface WhalesPreMarketContextValue {
   markets: MarketIdentifier[];
+  tokens: TokenIdentifier[];
   isInitialized: boolean;
   isLoading: boolean;
   error: Error | null;
+
+  // Market functions
   getMarket: (
     id: string
   ) => BasePreMarket<ethers.PopulatedTransaction | Transaction>;
@@ -63,6 +69,50 @@ export interface WhalesPreMarketContextValue {
     tx: ethers.PopulatedTransaction | Transaction,
     callbacks?: TransactionCallbacks
   ) => Promise<TransactionResult>;
+
+  // Token functions
+  getDecimals: (tokenId: string, tokenAddress: string) => Promise<number>;
+  getName: (tokenId: string, tokenAddress: string) => Promise<string>;
+  getSymbol: (tokenId: string, tokenAddress: string) => Promise<string>;
+  getUri: (tokenId: string, tokenAddress: string) => Promise<string>;
+  getBalance: (
+    tokenId: string,
+    owner: string,
+    tokenAddress: string
+  ) => Promise<number>;
+  getAllowance: (
+    tokenId: string,
+    owner: string,
+    tokenAddress: string,
+    spender: string
+  ) => Promise<number>;
+  approve: (
+    tokenId: string,
+    tokenAddress: string,
+    spender: string,
+    amount: number | string
+  ) => Promise<ethers.PopulatedTransaction | Transaction>;
+  parseAmount: (
+    tokenId: string,
+    tokenAddress: string,
+    amount: number | string
+  ) => Promise<ethers.BigNumber | BN>;
+  formatAmount: (
+    tokenId: string,
+    tokenAddress: string,
+    amount: ethers.BigNumber | BN
+  ) => Promise<string>;
+  getTokenInfo: (tokenId: string, tokenAddress: string) => Promise<TokenInfo>;
+  updateTokenProvider: (
+    tokenId: string,
+    provider: Connection | ethers.providers.Provider
+  ) => void;
+  executeBatch: <T>(
+    operations: Array<{
+      tokenId: string;
+      operation: (token: any) => Promise<T>;
+    }>
+  ) => Promise<T[]>;
 }
 
 /**
