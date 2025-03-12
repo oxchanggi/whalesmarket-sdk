@@ -1,46 +1,113 @@
-# Getting Started with Create React App
+# React Lib Demo
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A modern React component library with TypeScript support.
 
-## Available Scripts
+## Installation
 
-In the project directory, you can run:
+```bash
+npm install react-lib-demo
+# or
+yarn add react-lib-demo
+```
 
-### `npm start`
+## Usage
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```jsx
+import { Button, Card, useToggle } from 'react-lib-demo';
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+function App() {
+  const [isOpen, toggle] = useToggle(false);
 
-### `npm test`
+  return (
+    <div>
+      <Button onClick={toggle} variant="primary">
+        {isOpen ? 'Hide' : 'Show'} Card
+      </Button>
+      
+      {isOpen && (
+        <Card 
+          title="Example Card" 
+          footer={<Button variant="outline">Footer Action</Button>}
+        >
+          This is an example of using the Card component with a Button in the footer.
+        </Card>
+      )}
+    </div>
+  );
+}
+```
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Components
 
-### `npm run build`
+### Button
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+A customizable button component.
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+```jsx
+<Button 
+  variant="primary" // 'primary', 'secondary', or 'outline'
+  onClick={() => console.log('Clicked!')}
+  disabled={false}
+  className="custom-class"
+>
+  Click Me
+</Button>
+```
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+### Card
 
-### `npm run eject`
+A card component for displaying content in a contained box.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```jsx
+<Card 
+  title="Card Title"
+  footer={<div>Footer Content</div>}
+  className="custom-class"
+>
+  Card content goes here
+</Card>
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Hooks
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+### useToggle
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+A hook for toggle functionality.
 
-## Learn More
+```jsx
+const [isVisible, toggle] = useToggle(false);
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+// Toggle the state
+toggle();
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+// Use the state
+{isVisible && <div>This content can be toggled</div>}
+```
+
+## Utils
+
+The library also includes utility functions:
+
+- `debounce`: Limit how often a function can be called
+- `formatCurrency`: Format a number as currency
+- `truncate`: Truncate a string if it exceeds a certain length
+
+## Development
+
+```bash
+# Install dependencies
+npm install
+
+# Run Storybook for development
+npm run storybook
+
+# Build the library
+npm run build
+
+# Run tests
+npm test
+```
+
+## License
+
+MIT 
