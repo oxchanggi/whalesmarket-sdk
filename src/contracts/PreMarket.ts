@@ -12,7 +12,7 @@ import {
   TransactionCallbacks,
 } from "../BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
-import { signAndSendTransaction } from "../utils";
+import { signAndSendTransaction } from "../utils/transaction";
 
 /**
  * Class for interacting with the PreMarket contract
