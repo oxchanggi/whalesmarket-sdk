@@ -239,12 +239,6 @@ export const WhalesPreMarketProvider = ({
     isAcceptedToken: (marketId: string, token: string) =>
       manager.isAcceptedToken(marketId, token),
     getConfig: (marketId: string) => manager.getConfig(marketId),
-    signAndSendTransaction: (
-      marketId: string,
-      tx: ethers.PopulatedTransaction | Transaction,
-      callbacks?: TransactionCallbacks
-    ) => manager.signAndSendTransaction(marketId, tx, callbacks),
-
     // Token functions
     getDecimals: (tokenId: string, tokenAddress: string) =>
       tokens.getDecimals(tokenId, tokenAddress),

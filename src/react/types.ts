@@ -63,12 +63,6 @@ export interface WhalesPreMarketContextValue {
   getLastOrderId: (marketId: string) => Promise<number>;
   isAcceptedToken: (marketId: string, token: string) => Promise<boolean>;
   getConfig: (marketId: string) => Promise<BaseMarketConfig>;
-  signAndSendTransaction: (
-    marketId: string,
-    tx: ethers.PopulatedTransaction | Transaction,
-    callbacks?: TransactionCallbacks
-  ) => Promise<TransactionResult>;
-
   // Token functions
   getDecimals: (tokenId: string, tokenAddress: string) => Promise<number>;
   getName: (tokenId: string, tokenAddress: string) => Promise<string>;
