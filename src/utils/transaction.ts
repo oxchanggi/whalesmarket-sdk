@@ -1,4 +1,5 @@
 import { ethers } from "ethers";
+import { TransactionCallbacks } from "../BasePreMarket";
 
 // Debug log prefixes with colors
 export const LOG_PREFIXES = {
@@ -78,21 +79,7 @@ export const signAndSendTransaction = async (
   tx: ethers.PopulatedTransaction,
   wallet: ethers.Wallet | ethers.Signer,
   getRandomProvider: () => ethers.providers.Provider,
-  {
-    onSubmit,
-    onFinally,
-    onError,
-  }: {
-    onSubmit?: (tx: string) => void | Promise<void>;
-    onFinally?: (status: {
-      status: boolean | null;
-      confirmations: number;
-      txHash: string;
-      isCompleted: boolean;
-      attempts: number;
-    }) => void | Promise<void>;
-    onError?: (error: Error) => void | Promise<void>;
-  } = {},
+  callbacks?: TransactionCallbacks,
   contract?: ethers.BaseContract
 ): Promise<{
   transaction: {
@@ -105,6 +92,7 @@ export const signAndSendTransaction = async (
     attempts: number;
   };
 }> => {
+  const { onSubmit, onFinally, onError } = callbacks || {};
   try {
     // Prepare the transaction
     const transaction = {
