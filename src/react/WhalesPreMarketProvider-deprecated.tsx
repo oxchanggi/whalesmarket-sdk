@@ -1,8 +1,10 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Connection, Transaction } from "@solana/web3.js";
 import { ethers } from "ethers";
+import { useWalletClient } from "wagmi";
+import { useWallet } from "@solana/wallet-adapter-react";
 import { MultiPreMarketManager } from "../MultiPreMarketManager";
 import { CreateOfferParams, TransactionCallbacks } from "../BasePreMarket";
 import WhalesPreMarketContext from "./WhalesPreMarketContext";
@@ -26,6 +28,39 @@ export const WhalesPreMarketProvider = ({
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
   const [tokens] = useState(new MultiTokenManager());
+  const {
+    data: walletClient,
+    isError: isWagmiError,
+    error: wagmi,
+  } = useWalletClient();
+  const connectorSol = useWallet();
+
+  // Check if the component is wrapped in the required providers
+  useEffect(() => {
+    // Check if there are EVM markets
+    const hasEvmMarkets = markets.some((market) => market.type === "evm");
+    // Check if there are Solana markets
+    const hasSolanaMarkets = markets.some((market) => market.type === "solana");
+
+    // Check if WagmiProvider is missing for EVM markets
+    if (hasEvmMarkets && isWagmiError) {
+      throw new Error(
+        "WhalesPreMarketProvider must be wrapped in a WagmiProvider when using EVM markets. " +
+          "Please wrap your application with WagmiProvider before using WhalesPreMarketProvider."
+      );
+    }
+
+    // Check if WalletProvider is missing for Solana markets
+    if (
+      hasSolanaMarkets &&
+      (!connectorSol || typeof connectorSol.publicKey === "undefined")
+    ) {
+      throw new Error(
+        "WhalesPreMarketProvider must be wrapped in a WalletProvider from @solana/wallet-adapter-react when using Solana markets. " +
+          "Please wrap your application with WalletProvider before using WhalesPreMarketProvider."
+      );
+    }
+  }, [markets, isWagmiError, connectorSol]);
 
   // Initialize markets
   useEffect(() => {
@@ -83,6 +118,102 @@ export const WhalesPreMarketProvider = ({
     };
   }, [markets, manager, tokens]);
 
+  // Set EVM signer when walletClient changes
+  useEffect(() => {
+    if (!walletClient || !isInitialized) return;
+
+    // Get all EVM markets and set the signer
+    const evmMarkets = manager
+      .getAllMarketIds()
+      .filter((m) => m.chain === "evm");
+
+    for (const { id } of evmMarkets) {
+      try {
+        // Get the EVM market
+        const market = manager.getEVMMarket(id);
+
+        // Create an ethers provider from the walletClient
+        // For wagmi v2, we need to adapt the walletClient to work with ethers
+        const provider = new ethers.providers.Web3Provider(
+          walletClient?.transport as any
+        );
+
+        const signer = provider.getSigner();
+
+        // Set the signer for this market
+        market.setSigner(signer);
+
+        // Update the token provider as well
+        tokens.updateProvider(id, provider);
+
+        console.log(`Set signer for EVM market: ${id}`);
+      } catch (err) {
+        console.error(`Failed to set signer for market ${id}:`, err);
+      }
+    }
+  }, [walletClient, isInitialized, manager, tokens]);
+
+  // Set Solana signer when connectorSol changes
+  useEffect(() => {
+    if (!connectorSol || !isInitialized) return;
+
+    // Get all Solana markets and set the signer
+    const solanaMarkets = manager
+      .getAllMarketIds()
+      .filter((m) => m.chain === "solana");
+
+    for (const { id } of solanaMarkets) {
+      try {
+        // Get the Solana market
+        const market = manager.getSolanaMarket(id);
+
+        // Set the wallet for this market
+        market.setSigner(connectorSol);
+
+        // Find the market configuration to get the RPC URL
+        const marketConfig = markets.find(
+          (m) => m.id === id && m.type === "solana"
+        );
+        if (marketConfig) {
+          // Create a new connection with the same RPC URL
+          const connection = new Connection(marketConfig.rpc);
+          tokens.updateProvider(id, connection);
+        }
+
+        console.log(`Set wallet for Solana market: ${id}`);
+      } catch (err) {
+        console.error(`Failed to set wallet for market ${id}:`, err);
+      }
+    }
+  }, [connectorSol, isInitialized, manager, tokens, markets]);
+
+  const getTokenInfo = (tokenId: string, tokenAddress: string) => {
+    return tokens.getTokenInfo(tokenId, tokenAddress);
+  };
+
+  const updateTokenProvider = (
+    tokenId: string,
+    provider: Connection | ethers.providers.Provider
+  ): void => {
+    tokens.updateProvider(tokenId, provider);
+  };
+
+  // Generic function to execute batch operations
+  const executeBatch = async <T,>(
+    operations: Array<{
+      tokenId: string;
+      operation: (token: any) => Promise<T>;
+    }>
+  ): Promise<T[]> => {
+    // Convert the operations to the format expected by MultiTokenManager
+    const mappedOperations = operations.map((op) => ({
+      managerId: op.tokenId,
+      operation: op.operation,
+    }));
+
+    return tokens.executeBatch(mappedOperations);
+  };
+
   // Context value
   const contextValue: WhalesPreMarketContextValue = {
     markets: manager.getAllMarketIds(),
@@ -137,26 +268,9 @@ export const WhalesPreMarketProvider = ({
       spender: string,
       amount: number | string
     ) => tokens.approve(tokenId, tokenAddress, spender, amount),
-    getTokenInfo: (tokenId: string, tokenAddress: string) =>
-      tokens.getTokenInfo(tokenId, tokenAddress),
-    updateTokenProvider: (
-      tokenId: string,
-      provider: Connection | ethers.providers.Provider
-    ) => tokens.updateProvider(tokenId, provider),
-    executeBatch: (
-      operations: Array<{
-        tokenId: string;
-        operation: (token: any) => Promise<any>;
-      }>
-    ) => {
-      // Convert the operations to the format expected by MultiTokenManager
-      const mappedOperations = operations.map((op) => ({
-        managerId: op.tokenId,
-        operation: op.operation,
-      }));
-
-      return tokens.executeBatch(mappedOperations);
-    },
+    getTokenInfo,
+    updateTokenProvider,
+    executeBatch,
   };
 
   return (
