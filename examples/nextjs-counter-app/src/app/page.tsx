@@ -1,9 +1,30 @@
 "use client";
 
-import { useWhalesPreMarket } from "whales-sdk";
+import {
+  useWhalesPreMarket,
+  signAndSendTransaction,
+  createEVMTransactionParams,
+  BlockchainType,
+} from "whales-sdk";
 import { useState, useEffect } from "react";
 import { ConnectWallet } from "../components/ConnectWallet";
 import { ethers } from "ethers";
+import { useWalletClient } from "wagmi";
+
+// Định nghĩa các interface cần thiết nếu không được export từ thư viện
+interface TransactionStatus {
+  status: boolean | null;
+  confirmations: number;
+  isCompleted: boolean;
+  attempts: number;
+  txHash: string;
+}
+
+interface TransactionCallbacks {
+  onSubmit?: (txHash: string) => void | Promise<void>;
+  onFinally?: (status: TransactionStatus) => void | Promise<void>;
+  onError?: (error: Error) => void | Promise<void>;
+}
 
 // Define data type for market
 interface Market {
@@ -22,11 +43,10 @@ export default function Home() {
     createOffer,
     getOffer,
     getLastOfferId,
-    signAndSendTransaction,
   } = useWhalesPreMarket();
-
   const [marketStatus, setMarketStatus] = useState<string>("Loading...");
   const [lastOfferId, setLastOfferId] = useState<number | null>(null);
+  const { data: walletClient } = useWalletClient();
 
   useEffect(() => {
     if (isLoading) {
@@ -75,17 +95,34 @@ export default function Home() {
 
       transaction.gasLimit = ethers.BigNumber.from(250000);
 
-      await signAndSendTransaction(marketId, transaction, {
-        onSubmit: (tx) => {
-          console.log("Transaction sent:", tx);
+      // Define callbacks for transaction events
+      const callbacks: TransactionCallbacks = {
+        onSubmit: (txHash: string) => {
+          console.log("Transaction sent:", txHash);
         },
-        onFinally: (tx) => {
-          console.log("Transaction success:", tx);
+        onFinally: (status: TransactionStatus) => {
+          console.log("Transaction success:", status.txHash);
         },
-        onError: (error) => {
+        onError: (error: Error) => {
           console.error("Error when sending transaction:", error);
         },
-      });
+      };
+
+      const provider = new ethers.providers.Web3Provider(
+        walletClient?.transport as any
+      );
+
+      const signer = provider.getSigner();
+
+      // Create transaction parameters
+      const txParams = createEVMTransactionParams(
+        transaction,
+        signer,
+        () => provider
+      );
+
+      // Send transaction using the wrapper
+      await signAndSendTransaction(txParams, callbacks);
     } catch (error) {
       console.error("Error when creating offer:", error);
     }
