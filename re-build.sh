@@ -6,7 +6,7 @@ pnpm run build
 
 # Navigate to the example app directory
 echo "Navigating to the example app directory..."
-cd examples/nextjs-counter-app
+cd examples/nextjs
 
 # Install dependencies
 echo "Installing dependencies..."
