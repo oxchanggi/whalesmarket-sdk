@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import React, { Component } from "react";
 import { Connection, Transaction } from "@solana/web3.js";
 import { ethers } from "ethers";
 import { MultiPreMarketManager } from "../managers/MultiPreMarketManager";
@@ -13,149 +13,182 @@ import {
 import { MultiTokenManager } from "../managers/MultiTokenManager";
 
 /**
- * Provider component for WhalesPreMarket
+ * Abstract Provider class for WhalesPreMarket
  * Initializes and manages PreMarket instances
+ * Can be extended by child classes for custom functionality
  */
-export function WhalesPreMarketProvider<
+export abstract class WhalesPreMarketProvider<
   T extends BasePreMarket<Transaction, any>
->({ markets, children }: WhalesPreMarketProviderProps) {
-  const [manager] = useState<MultiPreMarketManager<T>>(() => {
-    return {} as MultiPreMarketManager<T>;
-  });
-  const [isInitialized, setIsInitialized] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<Error | null>(null);
-  const [tokens] = useState(new MultiTokenManager());
+> extends Component<
+  WhalesPreMarketProviderProps,
+  {
+    isInitialized: boolean;
+    isLoading: boolean;
+    error: Error | null;
+  }
+> {
+  protected manager: MultiPreMarketManager<T>;
+  protected tokens: MultiTokenManager;
 
-  // Initialize markets
-  useEffect(() => {
-    const initializeMarkets = async () => {
-      try {
-        setIsLoading(true);
-        setError(null);
+  constructor(props: WhalesPreMarketProviderProps) {
+    super(props);
 
-        // Initialize each market
-        for (const market of markets) {
-          if (market.type === "solana") {
-            const connection = new Connection(market.rpc);
-            await manager.addSolanaMarket(
-              market.id,
-              connection,
-              market.contractAddress,
-              market.configAccountPubKey
-            );
+    // Initialize state
+    this.state = {
+      isInitialized: false,
+      isLoading: true,
+      error: null,
+    };
 
-            // Initialize Solana token manager for this market
-            tokens.addSolanaToken(market.id, connection);
-          } else if (market.type === "evm") {
-            const provider = new ethers.providers.JsonRpcProvider(market.rpc);
-            await manager.addEVMMarket(
-              market.id,
-              market.contractAddress,
-              provider
-            );
+    // Initialize managers
+    this.manager = {} as MultiPreMarketManager<T>;
+    this.tokens = new MultiTokenManager();
 
-            // Initialize EVM token manager for this market
-            tokens.addEVMToken(market.id, provider);
-          }
+    // Bind methods
+    this.getContextValue = this.getContextValue.bind(this);
+  }
+
+  // Abstract method that can be overridden by child classes
+  protected abstract customizeMarketInitialization(market: any): Promise<void>;
+
+  componentDidMount() {
+    this.initializeMarkets();
+  }
+
+  componentWillUnmount() {
+    // Cleanup when component unmounts
+    this.manager.getAllMarketIds().forEach(({ id }: { id: string }) => {
+      this.manager.removeMarket(id);
+      // Also remove token managers
+      this.tokens.removeToken(id);
+    });
+  }
+
+  async initializeMarkets() {
+    try {
+      this.setState({ isLoading: true, error: null });
+
+      // Initialize each market
+      for (const market of this.props.markets) {
+        if (market.type === "solana") {
+          const connection = new Connection(market.rpc);
+          await this.manager.addSolanaMarket(
+            market.id,
+            connection,
+            market.contractAddress,
+            market.configAccountPubKey
+          );
+
+          // Initialize Solana token manager for this market
+          this.tokens.addSolanaToken(market.id, connection);
+        } else if (market.type === "evm") {
+          const provider = new ethers.providers.JsonRpcProvider(market.rpc);
+          await this.manager.addEVMMarket(
+            market.id,
+            market.contractAddress,
+            provider
+          );
+
+          // Initialize EVM token manager for this market
+          this.tokens.addEVMToken(market.id, provider);
         }
 
-        setIsInitialized(true);
-      } catch (err) {
-        setError(
-          err instanceof Error ? err : new Error("Failed to initialize markets")
-        );
-      } finally {
-        setIsLoading(false);
+        // Call the abstract method for custom initialization
+        await this.customizeMarketInitialization(market);
       }
-    };
 
-    initializeMarkets();
-
-    // Cleanup function
-    return () => {
-      // Remove all markets when component unmounts
-      manager.getAllMarketIds().forEach(({ id }: { id: string }) => {
-        manager.removeMarket(id);
-        // Also remove token managers
-        tokens.removeToken(id);
+      this.setState({ isInitialized: true });
+    } catch (err) {
+      this.setState({
+        error:
+          err instanceof Error
+            ? err
+            : new Error("Failed to initialize markets"),
       });
+    } finally {
+      this.setState({ isLoading: false });
+    }
+  }
+
+  // Create context value from current state and methods
+  getContextValue(): WhalesPreMarketContextValue {
+    return {
+      markets: this.manager.getAllMarketIds(),
+      tokens: this.tokens.getAllTokenIds(),
+      isInitialized: this.state.isInitialized,
+      isLoading: this.state.isLoading,
+      error: this.state.error,
+      getMarket: (id: string) => this.manager.getMarket(id),
+      createOffer: (marketId: string, params: CreateOfferParams) =>
+        this.manager.createOffer(marketId, params),
+      fillOffer: (marketId: string, offerId: number, amount: number) =>
+        this.manager.fillOffer(marketId, offerId, amount),
+      cancelOffer: (marketId: string, offerId: number) =>
+        this.manager.cancelOffer(marketId, offerId),
+      settleOrder: (marketId: string, orderId: number) =>
+        this.manager.settleOrder(marketId, orderId),
+      getOffer: (marketId: string, offerId: number) =>
+        this.manager.getOffer(marketId, offerId),
+      getOrder: (marketId: string, orderId: number) =>
+        this.manager.getOrder(marketId, orderId),
+      getLastOfferId: (marketId: string) =>
+        this.manager.getLastOfferId(marketId),
+      getLastOrderId: (marketId: string) =>
+        this.manager.getLastOrderId(marketId),
+      isAcceptedToken: (marketId: string, token: string) =>
+        this.manager.isAcceptedToken(marketId, token),
+      getConfig: (marketId: string) => this.manager.getConfig(marketId),
+      // Token functions
+      getDecimals: (tokenId: string, tokenAddress: string) =>
+        this.tokens.getDecimals(tokenId, tokenAddress),
+      getName: (tokenId: string, tokenAddress: string) =>
+        this.tokens.getName(tokenId, tokenAddress),
+      getSymbol: (tokenId: string, tokenAddress: string) =>
+        this.tokens.getSymbol(tokenId, tokenAddress),
+      getUri: (tokenId: string, tokenAddress: string) =>
+        this.tokens.getUri(tokenId, tokenAddress),
+      getBalance: (tokenId: string, owner: string, tokenAddress: string) =>
+        this.tokens.getBalance(tokenId, owner, tokenAddress),
+      getAllowance: (
+        tokenId: string,
+        owner: string,
+        tokenAddress: string,
+        spender: string
+      ) => this.tokens.getAllowance(tokenId, owner, tokenAddress, spender),
+      approve: (
+        tokenId: string,
+        tokenAddress: string,
+        spender: string,
+        amount: number | string
+      ) => this.tokens.approve(tokenId, tokenAddress, spender, amount),
+      getTokenInfo: (tokenId: string, tokenAddress: string) =>
+        this.tokens.getTokenInfo(tokenId, tokenAddress),
+      updateTokenProvider: (
+        tokenId: string,
+        provider: Connection | ethers.providers.Provider
+      ) => this.tokens.updateProvider(tokenId, provider),
+      executeBatch: (
+        operations: Array<{
+          tokenId: string;
+          operation: (token: any) => Promise<any>;
+        }>
+      ) => {
+        // Convert the operations to the format expected by MultiTokenManager
+        const mappedOperations = operations.map((op) => ({
+          managerId: op.tokenId,
+          operation: op.operation,
+        }));
+
+        return this.tokens.executeBatch(mappedOperations);
+      },
     };
-  }, [markets, manager, tokens]);
+  }
 
-  // Context value
-  const contextValue: WhalesPreMarketContextValue = {
-    markets: manager.getAllMarketIds(),
-    tokens: tokens.getAllTokenIds(),
-    isInitialized,
-    isLoading,
-    error,
-    getMarket: (id: string) => manager.getMarket(id),
-    createOffer: (marketId: string, params: CreateOfferParams) =>
-      manager.createOffer(marketId, params),
-    fillOffer: (marketId: string, offerId: number, amount: number) =>
-      manager.fillOffer(marketId, offerId, amount),
-    cancelOffer: (marketId: string, offerId: number) =>
-      manager.cancelOffer(marketId, offerId),
-    settleOrder: (marketId: string, orderId: number) =>
-      manager.settleOrder(marketId, orderId),
-    getOffer: (marketId: string, offerId: number) =>
-      manager.getOffer(marketId, offerId),
-    getOrder: (marketId: string, orderId: number) =>
-      manager.getOrder(marketId, orderId),
-    getLastOfferId: (marketId: string) => manager.getLastOfferId(marketId),
-    getLastOrderId: (marketId: string) => manager.getLastOrderId(marketId),
-    isAcceptedToken: (marketId: string, token: string) =>
-      manager.isAcceptedToken(marketId, token),
-    getConfig: (marketId: string) => manager.getConfig(marketId),
-    // Token functions
-    getDecimals: (tokenId: string, tokenAddress: string) =>
-      tokens.getDecimals(tokenId, tokenAddress),
-    getName: (tokenId: string, tokenAddress: string) =>
-      tokens.getName(tokenId, tokenAddress),
-    getSymbol: (tokenId: string, tokenAddress: string) =>
-      tokens.getSymbol(tokenId, tokenAddress),
-    getUri: (tokenId: string, tokenAddress: string) =>
-      tokens.getUri(tokenId, tokenAddress),
-    getBalance: (tokenId: string, owner: string, tokenAddress: string) =>
-      tokens.getBalance(tokenId, owner, tokenAddress),
-    getAllowance: (
-      tokenId: string,
-      owner: string,
-      tokenAddress: string,
-      spender: string
-    ) => tokens.getAllowance(tokenId, owner, tokenAddress, spender),
-    approve: (
-      tokenId: string,
-      tokenAddress: string,
-      spender: string,
-      amount: number | string
-    ) => tokens.approve(tokenId, tokenAddress, spender, amount),
-    getTokenInfo: (tokenId: string, tokenAddress: string) =>
-      tokens.getTokenInfo(tokenId, tokenAddress),
-    updateTokenProvider: (
-      tokenId: string,
-      provider: Connection | ethers.providers.Provider
-    ) => tokens.updateProvider(tokenId, provider),
-    executeBatch: (
-      operations: Array<{
-        tokenId: string;
-        operation: (token: any) => Promise<any>;
-      }>
-    ) => {
-      // Convert the operations to the format expected by MultiTokenManager
-      const mappedOperations = operations.map((op) => ({
-        managerId: op.tokenId,
-        operation: op.operation,
-      }));
-
-      return tokens.executeBatch(mappedOperations);
-    },
-  };
-
-  return (
-    <WhalesPreMarketContext.Provider value={contextValue}>
-      {children}
-    </WhalesPreMarketContext.Provider>
-  );
+  render() {
+    return (
+      <WhalesPreMarketContext.Provider value={this.getContextValue()}>
+        {this.props.children}
+      </WhalesPreMarketContext.Provider>
+    );
+  }
 }
