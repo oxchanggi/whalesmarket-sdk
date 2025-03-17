@@ -8,11 +8,9 @@ import {
   MarketConfig,
   CreateOfferParams,
   TransactionStatus,
-  TransactionResult,
-  TransactionCallbacks,
+  MatchOfferParams,
 } from "../BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
-import { signAndSendTransaction } from "../utils/transaction";
 
 /**
  * Class for interacting with the PreMarket contract
@@ -149,6 +147,67 @@ export class PreMarketContract extends BasePreMarket<
         fullMatch
       );
     }
+  }
+
+  /**
+   * Match multiple offers and create a new offer with the remaining amount
+   * @param params Parameters for matching offers
+   * @returns Populated transaction
+   */
+  public async matchOffer(
+    params: MatchOfferParams
+  ): Promise<ethers.PopulatedTransaction> {
+    const {
+      offerIds,
+      tokenId,
+      totalAmount,
+      totalValue,
+      offerType,
+      exToken,
+      newOfferFullMatch,
+    } = params;
+
+    // Convert numbers to BigNumber for internal processing
+    const offerIdsBN = offerIds.map((id) => ethers.BigNumber.from(id));
+    const totalAmountBN = parseTokenAmount(totalAmount, 6);
+
+    // Get token decimals and convert value to BigNumber with token decimals
+    let totalValueBN;
+    if (exToken.toLowerCase() === this.ETH_ADDRESS.toLowerCase()) {
+      totalValueBN = parseTokenAmount(totalValue, 18); // ETH uses 18 decimals
+    } else {
+      const tokenDecimals = await getTokenDecimals(
+        exToken,
+        this.contract.provider
+      );
+      totalValueBN = parseTokenAmount(totalValue, tokenDecimals);
+    }
+
+    let tx: ethers.PopulatedTransaction;
+    // Build the transaction
+    if (exToken.toLowerCase() === this.ETH_ADDRESS.toLowerCase()) {
+      tx = await this.contract.populateTransaction.matchOfferETH(
+        offerIdsBN,
+        tokenId,
+        totalAmountBN,
+        offerType,
+        newOfferFullMatch
+      );
+      // For ETH transactions, we need to set the value
+      tx.value = totalValueBN;
+    } else {
+      tx = await this.contract.populateTransaction.matchOffer(
+        offerIdsBN,
+        tokenId,
+        totalAmountBN,
+        totalValueBN,
+        offerType,
+        exToken,
+        newOfferFullMatch
+      );
+    }
+
+    return tx;
   }
 
   /**
@@ -835,29 +894,6 @@ export class PreMarketContract extends BasePreMarket<
 
     // This should never be reached due to the return in the if(!receipt) block
     throw new Error("Failed to get transaction status after maximum retries");
-  }
-
-  /**
-   * Signs and sends a transaction
-   * @param tx The transaction to sign and send
-   * @param callbacks Optional callbacks for transaction events
-   * @returns The transaction result
-   * @throws Error if no signer is set
-   */
-  public async signAndSendTransaction(
-    tx: ethers.PopulatedTransaction,
-    callbacks: TransactionCallbacks = {}
-  ): Promise<TransactionResult> {
-    if (!this._signer) {
-      throw new Error("No signer set. Please call setSigner() first.");
-    }
-    return signAndSendTransaction(
-      tx,
-      this._signer,
-      () => this.contract.provider,
-      callbacks,
-      this.contract
-    );
   }
 
   /**

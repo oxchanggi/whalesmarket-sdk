@@ -1,5 +1,5 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-nocheck
+
 import {
   Connection,
   PublicKey,
@@ -44,7 +44,9 @@ export default class PreMarket {
   connection: Connection;
   program: anchor.Program<PreMarketType>;
 
+  // @ts-ignore
   configAccountPubKey: PublicKey;
+  // @ts-ignore
   configAccount: anchor.IdlAccounts<PreMarketType>["configAccount"];
 
   constructor(connection: Connection, programId: string) {
@@ -370,6 +372,39 @@ export default class PreMarket {
     }
     return id;
   }
+  async findMultipleIdOrder(count: number): Promise<number[]> {
+    await this.fetchConfigAccount(
+      this.configAccountPubKey.toString(),
+      "processed"
+    );
+
+    const ids: number[] = [];
+    let counter = 0;
+    const maxRange = (RANGE_MIN + RANGE_MAX) * count;
+
+    while (ids.length < count) {
+      let id = randomInt(
+        this.configAccount.lastOrderId.toNumber() - RANGE_MIN,
+        this.configAccount.lastOrderId.toNumber() + maxRange
+      );
+
+      try {
+        await this.fetchOrderAccount(id, "processed");
+      } catch (e) {
+        if (!ids.includes(id)) {
+          ids.push(id);
+        }
+        continue;
+      }
+
+      counter++;
+      if (counter > maxRange) {
+        throw new Error(`Could not find ${count} available order IDs`);
+      }
+    }
+
+    return ids;
+  }
 
   async createOffer(
     tokenId: number,
@@ -426,9 +461,9 @@ export default class PreMarket {
       .div(new anchor.BN(WEI6))
       .toNumber();
 
-    const amountTransfer = type == "buy" ? value : collateral;
+    let amountTransfer = type == "buy" ? value : collateral;
 
-    const id = await this.findIdOffer();
+    let id = await this.findIdOffer();
     const offerAccountPubKey = getOfferAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -525,7 +560,7 @@ export default class PreMarket {
     const exTokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(exToken);
 
-    const userTokenAccount = await getAssociatedTokenAddress(
+    let userTokenAccount = await getAssociatedTokenAddress(
       exToken,
       user,
       false,
@@ -1294,7 +1329,7 @@ export default class PreMarket {
     return finalTransaction;
   }
 
-  async cancelOrder(id: number): Promise<Transaction> {
+  async cancelOrder(id: number, operator: PublicKey): Promise<Transaction> {
     const orderAccountPubKey = getOrderAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -1340,6 +1375,12 @@ export default class PreMarket {
       exTokenInfo.value.owner
     );
 
+    const roleAccountPubKey = getRoleAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      operator
+    );
+
     const transaction = await this.program.methods
       .cancelOrder()
       .accounts({
@@ -1356,6 +1397,8 @@ export default class PreMarket {
         buyer: orderAccount.buyer,
         offerAuthority: offerAccount.authority,
         configAuthority: this.configAccount.authority,
+        operator: operator,
+        roleAccount: roleAccountPubKey,
         tokenProgram: exTokenInfo.value.owner,
       })
       .transaction();
@@ -1367,6 +1410,20 @@ export default class PreMarket {
     //
     //   return transaction.add(transactionUnWrapSol);
     // }
+
+    return transaction;
+  }
+
+  async cancelOrders(id: number[], operator: PublicKey): Promise<Transaction> {
+    if (id.length > 2) {
+      throw new Error("Cannot cancel more than 4 orders at once");
+    }
+    const transaction = new Transaction();
+
+    const txs = await Promise.all(
+      id.map((orderId) => this.cancelOrder(orderId, operator))
+    );
+    txs.forEach((tx) => transaction.add(tx));
 
     return transaction;
   }
@@ -1440,6 +1497,7 @@ export default class PreMarket {
 
     return transaction;
   }
+
   private async getProgramSignatures(params?: {
     before?: string;
     until?: string;
@@ -1494,6 +1552,7 @@ export default class PreMarket {
             maxSupportedTransactionVersion: 0,
           }
         );
+        // @ts-ignore
         transactions.push(...batchTransactions);
         break;
       } catch (e) {
@@ -1534,8 +1593,10 @@ export default class PreMarket {
       this.program.programId,
       new BorshCoder(this.program.idl)
     );
+    // @ts-ignore
     const events = eventParser.parseLogs(transactionParsed.meta.logMessages);
     const eventsData: any[] = [];
+    // @ts-ignore
     for (const event of events) {
       eventsData.push(event);
     }

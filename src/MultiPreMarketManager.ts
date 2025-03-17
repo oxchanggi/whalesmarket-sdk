@@ -294,8 +294,7 @@ export class MultiPreMarketManager {
     tx: Transaction | ethers.PopulatedTransaction,
     callbacks?: TransactionCallbacks
   ): Promise<TransactionResult> {
-    const market = this.getMarket(marketId);
-    return market.signAndSendTransaction(tx, callbacks);
+    throw new Error("Not implemented");
   }
 
   /**

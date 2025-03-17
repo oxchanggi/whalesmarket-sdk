@@ -37,9 +37,6 @@ const WhalesPreMarketContext = createContext<WhalesPreMarketContextValue>({
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
   getConfig: () =>
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
-  signAndSendTransaction: () =>
-    Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
-
   // Token functions
   getDecimals: () =>
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),

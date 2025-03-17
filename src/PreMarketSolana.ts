@@ -10,10 +10,12 @@ import {
   TransactionResult,
   TransactionStatus,
   SignerType,
+  MatchOfferParams,
 } from "./BasePreMarket";
 import PreMarketOriginal from "./PreMarketSolana/PreMarket";
 import { NATIVE_MINT, getMint } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";
+import { PreMarketWrapper } from "./PreMarketSolana/preMarketWrapper";
 
 /**
  * Type definition for Solana signers
@@ -27,6 +29,7 @@ export type SolanaSigner = Keypair | WalletContextState;
  */
 export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
   private preMarket: PreMarketOriginal;
+  private preMarketWrapper: PreMarketWrapper;
   private connection: Connection;
   private configAccountPubKey: PublicKey | null = null;
 
@@ -39,6 +42,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
     super();
     this.connection = connection;
     this.preMarket = new PreMarketOriginal(connection, programId);
+    this.preMarketWrapper = new PreMarketWrapper(this.preMarket);
   }
 
   /**
@@ -183,10 +187,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
   async getOffer(offerId: number): Promise<OfferData> {
     const offerAccount = await this.preMarket.fetchOfferAccount(offerId);
     return {
-      offerType:
-        offerAccount.offerType && offerAccount.offerType.toString() === "Buy"
-          ? 0
-          : 1,
+      offerType: offerAccount.offerType.toString() === "Buy" ? 0 : 1,
       tokenId: offerAccount.tokenConfig.toString(),
       exToken: offerAccount.exToken.toString(),
       amount: Number(offerAccount.totalAmount),
@@ -278,6 +279,90 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
       fullMatch,
       signerPublicKey
     );
+  }
+
+  /**
+   * Match multiple offers and create a new offer with the remaining amount
+   * @param params Parameters for matching offers
+   * @returns Transaction data
+   */
+  async matchOffer(params: MatchOfferParams): Promise<Transaction> {
+    const {
+      offerIds,
+      tokenId,
+      totalAmount,
+      totalValue,
+      offerType,
+      exToken,
+      newOfferFullMatch,
+    } = params;
+
+    // Validate input parameters
+    if (!offerIds || offerIds.length === 0) {
+      throw new Error("At least one offer ID must be provided");
+    }
+
+    if (totalAmount <= 0) {
+      throw new Error("Total amount must be greater than zero");
+    }
+
+    if (totalValue <= 0) {
+      throw new Error("Total value must be greater than zero");
+    }
+
+    // Convert to Solana-specific implementation
+    const type = offerType === 0 ? "buy" : "sell";
+
+    if (!this.preMarket) {
+      throw new Error("PreMarket instance not initialized");
+    }
+
+    // Get the signer's public key
+    const signerPublicKey = this.getSignerPublicKey();
+    if (!signerPublicKey) {
+      throw new Error("No signer set or signer has no public key");
+    }
+
+    // Adjust amount by multiplying with 10^6
+    const adjustedAmount = totalAmount * Math.pow(10, 6);
+
+    // Get token decimals and adjust value
+    const tokenPublicKey = new PublicKey(exToken || NATIVE_MINT.toString());
+    let adjustedValue = totalValue;
+    try {
+      // Get token mint info to retrieve decimals
+      const mintInfo = await getMint(this.connection, tokenPublicKey);
+
+      // Adjust value based on token decimals
+      // Multiply by 10^decimals
+      adjustedValue = totalValue * Math.pow(10, mintInfo.decimals);
+    } catch (error) {
+      console.error(`Error getting decimals for token ${exToken}:`, error);
+      // Default to 9 decimals (common in Solana) if there's an error
+      adjustedValue = totalValue * Math.pow(10, 9);
+    }
+
+    try {
+      // Use the preMarketWrapper to match offers
+      // The preMarketWrapper.matchOffer method expects:
+      // user: PublicKey, offerIds: number[], totalAmount: number, matchPrice: number,
+      // offerType: "buy" | "sell", newOfferFullMatch: boolean, newOrderIds?: number[]
+      return await this.preMarketWrapper.matchOffer(
+        signerPublicKey,
+        offerIds,
+        adjustedAmount,
+        adjustedValue,
+        type,
+        newOfferFullMatch
+      );
+    } catch (error) {
+      console.error("Error in matchOffer:", error);
+      throw new Error(
+        `Failed to match offers: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
   }
 
   /**
@@ -424,6 +509,6 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
    * @returns Transaction data
    */
   async cancelOrder(orderId: number): Promise<Transaction> {
-    return this.preMarket.cancelOrder(orderId);
+    return this.preMarket.cancelOrder(orderId, this.getSigner()?.publicKey!);
   }
 }

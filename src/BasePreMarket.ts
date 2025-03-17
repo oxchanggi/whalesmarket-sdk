@@ -74,6 +74,13 @@ export abstract class BasePreMarket<T, S extends SignerType = SignerType> {
   abstract createOffer(params: CreateOfferParams): Promise<T>;
 
   /**
+   * Match multiple offers and create a new offer with the remaining amount
+   * @param params Parameters for matching offers
+   * @returns Transaction of type T
+   */
+  abstract matchOffer(params: MatchOfferParams): Promise<T>;
+
+  /**
    * Fill an existing offer
    * @param offerId The ID of the offer to fill
    * @param amount The amount to fill
@@ -118,18 +125,6 @@ export abstract class BasePreMarket<T, S extends SignerType = SignerType> {
     txHash: string,
     maxRetries?: number
   ): Promise<TransactionStatus>;
-
-  /**
-   * Sign and send a transaction
-   * @param tx The transaction to send
-   * @param callbacks Optional callbacks for transaction events
-   * @returns Transaction result with status
-   * @throws Error if no signer is set
-   */
-  abstract signAndSendTransaction(
-    tx: T,
-    callbacks?: TransactionCallbacks
-  ): Promise<TransactionResult>;
 }
 
 /**
@@ -169,6 +164,19 @@ export interface CreateOfferParams {
   value: number;
   exToken?: string;
   fullMatch?: boolean;
+}
+
+/**
+ * Parameters for matching offers
+ */
+export interface MatchOfferParams {
+  offerIds: number[];
+  tokenId: string;
+  totalAmount: number;
+  totalValue: number;
+  offerType: number;
+  exToken: string;
+  newOfferFullMatch: boolean;
 }
 
 /**

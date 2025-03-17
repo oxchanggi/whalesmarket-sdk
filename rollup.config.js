@@ -3,6 +3,7 @@ import commonjs from "@rollup/plugin-commonjs";
 import typescript from "rollup-plugin-typescript2";
 import peerDepsExternal from "rollup-plugin-peer-deps-external";
 import packageJson from "./package.json";
+import json from "@rollup/plugin-json";
 
 export default {
   input: "src/index.ts",
@@ -19,6 +20,7 @@ export default {
     },
   ],
   plugins: [
+    json(),
     peerDepsExternal(),
     resolve(),
     commonjs(),

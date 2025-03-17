@@ -1171,6 +1171,11 @@ export type PreMarketType = {
         },
         {
           "name": "configAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "operator",
           "isMut": true,
           "isSigner": true
         },
@@ -1186,6 +1191,11 @@ export type PreMarketType = {
         },
         {
           "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "roleAccount",
           "isMut": false,
           "isSigner": false
         }
@@ -1624,6 +1634,9 @@ export type PreMarketType = {
           },
           {
             "name": "SettleVerifier"
+          },
+          {
+            "name": "CancelOrder"
           }
         ]
       }
@@ -3452,6 +3465,11 @@ export const IDL: PreMarketType = {
         },
         {
           "name": "configAuthority",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "operator",
           "isMut": true,
           "isSigner": true
         },
@@ -3467,6 +3485,11 @@ export const IDL: PreMarketType = {
         },
         {
           "name": "associatedTokenProgram",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "roleAccount",
           "isMut": false,
           "isSigner": false
         }
@@ -3905,6 +3928,9 @@ export const IDL: PreMarketType = {
           },
           {
             "name": "SettleVerifier"
+          },
+          {
+            "name": "CancelOrder"
           }
         ]
       }

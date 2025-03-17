@@ -27,6 +27,25 @@ import type {
   OnEvent,
 } from "./common";
 
+export type SettleDiscountStruct = {
+  orderId: BigNumberish;
+  sellerDiscount: BigNumberish;
+  buyerDiscount: BigNumberish;
+  signature: BytesLike;
+};
+
+export type SettleDiscountStructOutput = [
+  BigNumber,
+  BigNumber,
+  BigNumber,
+  string
+] & {
+  orderId: BigNumber;
+  sellerDiscount: BigNumber;
+  buyerDiscount: BigNumber;
+  signature: string;
+};
+
 export type ConfigStruct = {
   pledgeRate: BigNumberish;
   feeRefund: BigNumberish;
@@ -100,25 +119,6 @@ export type OrderStructOutput = [
   status: number;
 };
 
-export type SettleDiscountStruct = {
-  orderId: BigNumberish;
-  sellerDiscount: BigNumberish;
-  buyerDiscount: BigNumberish;
-  signature: BytesLike;
-};
-
-export type SettleDiscountStructOutput = [
-  BigNumber,
-  BigNumber,
-  BigNumber,
-  string
-] & {
-  orderId: BigNumber;
-  sellerDiscount: BigNumber;
-  buyerDiscount: BigNumber;
-  signature: string;
-};
-
 export type TokenStruct = {
   token: string;
   settleTime: BigNumberish;
@@ -142,6 +142,7 @@ export interface PreMarketInterface extends utils.Interface {
     "DISCOUNT_FEE_ROLE()": FunctionFragment;
     "OPERATOR_ROLE()": FunctionFragment;
     "cancelOffer(uint256)": FunctionFragment;
+    "cancelOfferWithDiscount(uint256,(uint256,uint256,uint256,bytes))": FunctionFragment;
     "cancelOffers(uint256[])": FunctionFragment;
     "cancelToken(bytes32)": FunctionFragment;
     "config()": FunctionFragment;
@@ -161,6 +162,8 @@ export interface PreMarketInterface extends utils.Interface {
     "isSellOffer(uint256)": FunctionFragment;
     "lastOfferId()": FunctionFragment;
     "lastOrderId()": FunctionFragment;
+    "matchOffer(uint256[],bytes32,uint256,uint256,uint8,address,bool)": FunctionFragment;
+    "matchOfferETH(uint256[],bytes32,uint256,uint8,bool)": FunctionFragment;
     "newOffer(uint8,bytes32,uint256,uint256,address,bool)": FunctionFragment;
     "newOfferETH(uint8,bytes32,uint256,uint256,bool)": FunctionFragment;
     "offerAmount(uint256)": FunctionFragment;
@@ -205,6 +208,7 @@ export interface PreMarketInterface extends utils.Interface {
       | "DISCOUNT_FEE_ROLE"
       | "OPERATOR_ROLE"
       | "cancelOffer"
+      | "cancelOfferWithDiscount"
       | "cancelOffers"
       | "cancelToken"
       | "config"
@@ -224,6 +228,8 @@ export interface PreMarketInterface extends utils.Interface {
       | "isSellOffer"
       | "lastOfferId"
       | "lastOrderId"
+      | "matchOffer"
+      | "matchOfferETH"
       | "newOffer"
       | "newOfferETH"
       | "offerAmount"
@@ -280,6 +286,10 @@ export interface PreMarketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "cancelOffer",
     values: [BigNumberish]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "cancelOfferWithDiscount",
+    values: [BigNumberish, SettleDiscountStruct]
   ): string;
   encodeFunctionData(
     functionFragment: "cancelOffers",
@@ -350,6 +360,22 @@ export interface PreMarketInterface extends utils.Interface {
   encodeFunctionData(
     functionFragment: "lastOrderId",
     values?: undefined
+  ): string;
+  encodeFunctionData(
+    functionFragment: "matchOffer",
+    values: [
+      BigNumberish[],
+      BytesLike,
+      BigNumberish,
+      BigNumberish,
+      BigNumberish,
+      string,
+      boolean
+    ]
+  ): string;
+  encodeFunctionData(
+    functionFragment: "matchOfferETH",
+    values: [BigNumberish[], BytesLike, BigNumberish, BigNumberish, boolean]
   ): string;
   encodeFunctionData(
     functionFragment: "newOffer",
@@ -511,6 +537,10 @@ export interface PreMarketInterface extends utils.Interface {
     data: BytesLike
   ): Result;
   decodeFunctionResult(
+    functionFragment: "cancelOfferWithDiscount",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(
     functionFragment: "cancelOffers",
     data: BytesLike
   ): Result;
@@ -560,6 +590,11 @@ export interface PreMarketInterface extends utils.Interface {
   ): Result;
   decodeFunctionResult(
     functionFragment: "lastOrderId",
+    data: BytesLike
+  ): Result;
+  decodeFunctionResult(functionFragment: "matchOffer", data: BytesLike): Result;
+  decodeFunctionResult(
+    functionFragment: "matchOfferETH",
     data: BytesLike
   ): Result;
   decodeFunctionResult(functionFragment: "newOffer", data: BytesLike): Result;
@@ -1079,6 +1114,12 @@ export interface PreMarket extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<ContractTransaction>;
 
+    cancelOfferWithDiscount(
+      offerId: BigNumberish,
+      discount: SettleDiscountStruct,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
     cancelOffers(
       offerIds: BigNumberish[],
       overrides?: Overrides & { from?: string }
@@ -1162,6 +1203,26 @@ export interface PreMarket extends BaseContract {
     lastOfferId(overrides?: CallOverrides): Promise<[BigNumber]>;
 
     lastOrderId(overrides?: CallOverrides): Promise<[BigNumber]>;
+
+    matchOffer(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      totalValue: BigNumberish,
+      offerType: BigNumberish,
+      exToken: string,
+      newOfferFullMatch: boolean,
+      overrides?: Overrides & { from?: string }
+    ): Promise<ContractTransaction>;
+
+    matchOfferETH(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      offerType: BigNumberish,
+      newOfferFullMatch: boolean,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<ContractTransaction>;
 
     newOffer(
       offerType: BigNumberish,
@@ -1373,6 +1434,12 @@ export interface PreMarket extends BaseContract {
     overrides?: Overrides & { from?: string }
   ): Promise<ContractTransaction>;
 
+  cancelOfferWithDiscount(
+    offerId: BigNumberish,
+    discount: SettleDiscountStruct,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
   cancelOffers(
     offerIds: BigNumberish[],
     overrides?: Overrides & { from?: string }
@@ -1453,6 +1520,26 @@ export interface PreMarket extends BaseContract {
   lastOfferId(overrides?: CallOverrides): Promise<BigNumber>;
 
   lastOrderId(overrides?: CallOverrides): Promise<BigNumber>;
+
+  matchOffer(
+    offerIds: BigNumberish[],
+    tokenId: BytesLike,
+    totalAmount: BigNumberish,
+    totalValue: BigNumberish,
+    offerType: BigNumberish,
+    exToken: string,
+    newOfferFullMatch: boolean,
+    overrides?: Overrides & { from?: string }
+  ): Promise<ContractTransaction>;
+
+  matchOfferETH(
+    offerIds: BigNumberish[],
+    tokenId: BytesLike,
+    totalAmount: BigNumberish,
+    offerType: BigNumberish,
+    newOfferFullMatch: boolean,
+    overrides?: PayableOverrides & { from?: string }
+  ): Promise<ContractTransaction>;
 
   newOffer(
     offerType: BigNumberish,
@@ -1664,6 +1751,12 @@ export interface PreMarket extends BaseContract {
       overrides?: CallOverrides
     ): Promise<void>;
 
+    cancelOfferWithDiscount(
+      offerId: BigNumberish,
+      discount: SettleDiscountStruct,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
     cancelOffers(
       offerIds: BigNumberish[],
       overrides?: CallOverrides
@@ -1683,13 +1776,13 @@ export interface PreMarket extends BaseContract {
       offerId: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     fillOfferETH(
       offerId: BigNumberish,
       amount: BigNumberish,
       overrides?: CallOverrides
-    ): Promise<void>;
+    ): Promise<BigNumber>;
 
     forceCancelOrder(
       orderId: BigNumberish,
@@ -1736,6 +1829,26 @@ export interface PreMarket extends BaseContract {
     lastOfferId(overrides?: CallOverrides): Promise<BigNumber>;
 
     lastOrderId(overrides?: CallOverrides): Promise<BigNumber>;
+
+    matchOffer(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      totalValue: BigNumberish,
+      offerType: BigNumberish,
+      exToken: string,
+      newOfferFullMatch: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
+
+    matchOfferETH(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      offerType: BigNumberish,
+      newOfferFullMatch: boolean,
+      overrides?: CallOverrides
+    ): Promise<void>;
 
     newOffer(
       offerType: BigNumberish,
@@ -2189,6 +2302,12 @@ export interface PreMarket extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<BigNumber>;
 
+    cancelOfferWithDiscount(
+      offerId: BigNumberish,
+      discount: SettleDiscountStruct,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
     cancelOffers(
       offerIds: BigNumberish[],
       overrides?: Overrides & { from?: string }
@@ -2273,6 +2392,26 @@ export interface PreMarket extends BaseContract {
     lastOfferId(overrides?: CallOverrides): Promise<BigNumber>;
 
     lastOrderId(overrides?: CallOverrides): Promise<BigNumber>;
+
+    matchOffer(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      totalValue: BigNumberish,
+      offerType: BigNumberish,
+      exToken: string,
+      newOfferFullMatch: boolean,
+      overrides?: Overrides & { from?: string }
+    ): Promise<BigNumber>;
+
+    matchOfferETH(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      offerType: BigNumberish,
+      newOfferFullMatch: boolean,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<BigNumber>;
 
     newOffer(
       offerType: BigNumberish,
@@ -2478,6 +2617,12 @@ export interface PreMarket extends BaseContract {
       overrides?: Overrides & { from?: string }
     ): Promise<PopulatedTransaction>;
 
+    cancelOfferWithDiscount(
+      offerId: BigNumberish,
+      discount: SettleDiscountStruct,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
     cancelOffers(
       offerIds: BigNumberish[],
       overrides?: Overrides & { from?: string }
@@ -2567,6 +2712,26 @@ export interface PreMarket extends BaseContract {
     lastOfferId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
 
     lastOrderId(overrides?: CallOverrides): Promise<PopulatedTransaction>;
+
+    matchOffer(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      totalValue: BigNumberish,
+      offerType: BigNumberish,
+      exToken: string,
+      newOfferFullMatch: boolean,
+      overrides?: Overrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
+
+    matchOfferETH(
+      offerIds: BigNumberish[],
+      tokenId: BytesLike,
+      totalAmount: BigNumberish,
+      offerType: BigNumberish,
+      newOfferFullMatch: boolean,
+      overrides?: PayableOverrides & { from?: string }
+    ): Promise<PopulatedTransaction>;
 
     newOffer(
       offerType: BigNumberish,
