@@ -1,0 +1,40 @@
+{
+  "name": "whales-mobile-sdk",
+  "version": "0.1.0",
+  "description": "Mobile-friendly Whales SDK without Anchor dependency",
+  "main": "dist/index.js",
+  "module": "dist/index.esm.js",
+  "types": "dist/index.d.ts",
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "rollup -c",
+    "clean": "rimraf dist",
+    "prepublishOnly": "pnpm run clean && pnpm run build"
+  },
+  "dependencies": {
+    "@whales/core": "workspace:*",
+    "@solana/web3.js": "^1.68.0",
+    "@solana/spl-token": "^0.3.9",
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "axios": "^1.6.7",
+    "tslib": "^2.6.2"
+  },
+  "peerDependencies": {
+    "@solana/web3.js": "^1.68.0",
+    "@solana/spl-token": "^0.3.9",
+    "@solana/wallet-adapter-react": "^0.15.35"
+  },
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^22.0.1",
+    "@rollup/plugin-json": "^6.1.0",
+    "@rollup/plugin-node-resolve": "^13.3.0",
+    "@types/bn.js": "^5.1.6",
+    "rimraf": "^5.0.0",
+    "rollup": "^2.76.0",
+    "rollup-plugin-peer-deps-external": "^2.2.4",
+    "rollup-plugin-typescript2": "^0.32.1",
+    "typescript": "^4.7.4"
+  }
+}

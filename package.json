@@ -13,8 +13,7 @@
     "test": "jest",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "lint": "eslint src/**/*.{js,jsx,ts,tsx}",
-    "prepare": "pnpm run build"
+    "lint": "eslint src/**/*.{js,jsx,ts,tsx}"
   },
   "peerDependencies": {
     "@coral-xyz/anchor": "^0.29.0",

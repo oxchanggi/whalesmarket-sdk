@@ -1,0 +1,17 @@
+{
+  "name": "whales-monorepo",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "build": "pnpm -r build",
+    "test": "pnpm -r test",
+    "clean": "pnpm -r clean",
+    "publish-packages": "pnpm -r publish"
+  },
+  "devDependencies": {
+    "typescript": "^4.7.4",
+    "rimraf": "^5.0.0"
+  }
+}

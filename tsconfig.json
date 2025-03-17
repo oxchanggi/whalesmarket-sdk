@@ -19,7 +19,14 @@
     "outDir": "dist",
     "downlevelIteration": true
   },
-  "include": ["src"],
+  "include": [
+    "src",
+    "packages/whales-core/src/types",
+    "packages/whales-core/src/utils",
+    "packages/whales-core/src/jito-sdk",
+    "packages/whales-core/src/contracts",
+    "packages/whales-core/src/pre-markets/PreMarketEVM.ts"
+  ],
   "exclude": [
     "node_modules",
     "dist",

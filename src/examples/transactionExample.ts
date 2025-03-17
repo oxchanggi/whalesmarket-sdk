@@ -5,7 +5,7 @@ import {
   createEVMTransactionParams,
   createSolanaTransactionParams,
   BlockchainType,
-} from "../utils/transactionWrapper";
+} from "../../packages/whales-core/src/utils/transactionWrapper";
 import { TransactionCallbacks } from "../BasePreMarket";
 
 /**

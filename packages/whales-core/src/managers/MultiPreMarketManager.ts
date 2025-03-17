@@ -8,10 +8,8 @@ import {
   OrderData,
   TransactionCallbacks,
   TransactionResult,
-} from "./BasePreMarket";
-import { PreMarketSolana } from "./PreMarketSolana";
-import { PreMarketContract } from "./contracts/PreMarket";
-
+} from "../base/BasePreMarket";
+import { PreMarketContract } from "../pre-markets/PreMarketEVM";
 /**
  * Interface for market identification
  */
@@ -19,6 +17,8 @@ export interface MarketIdentifier {
   id: string;
   chain: "solana" | "evm";
 }
+
+type PreMarketSolana = BasePreMarket<Transaction, any>;
 
 /**
  * Class for managing multiple pre-markets across different chains
@@ -37,22 +37,14 @@ export class MultiPreMarketManager {
    */
   public async addSolanaMarket(
     id: string,
-    connection: Connection,
-    programId: string,
-    configAccountPubKey?: string
+    preMarket: PreMarketSolana
   ): Promise<PreMarketSolana> {
     if (this.solanaMarkets.has(id) || this.evmMarkets.has(id)) {
       throw new Error(`Market with ID ${id} already exists`);
     }
 
-    const market = new PreMarketSolana(connection, programId);
-
-    if (configAccountPubKey) {
-      await market.initialize({ configAccountPubKey });
-    }
-
-    this.solanaMarkets.set(id, market);
-    return market;
+    this.solanaMarkets.set(id, preMarket);
+    return preMarket;
   }
 
   /**

@@ -10,8 +10,8 @@ import {
   createApproveInstruction,
   getAssociatedTokenAddress,
 } from "@solana/spl-token";
-import { BaseToken } from "./BaseToken";
 import BN from "bn.js";
+import { BaseToken } from "../base/BaseToken";
 
 /**
  * Solana Token implementation

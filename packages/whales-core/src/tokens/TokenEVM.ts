@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { BaseToken } from "./BaseToken";
+import { BaseToken } from "../base/BaseToken";
 
 /**
  * EVM Token implementation

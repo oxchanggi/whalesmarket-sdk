@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import { Connection, Keypair, Transaction } from "@solana/web3.js";
 import { WalletContextState } from "@solana/wallet-adapter-react";
-import { TransactionCallbacks, TransactionResult } from "../BasePreMarket";
+import { TransactionCallbacks, TransactionResult } from "../base/BasePreMarket";
 import { signAndSendTransaction as signAndSendEVMTransaction } from "./transaction";
 import { signAndSendTransaction as signAndSendSolanaTransaction } from "./solana";
 

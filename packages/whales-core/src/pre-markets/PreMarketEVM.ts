@@ -9,7 +9,7 @@ import {
   CreateOfferParams,
   TransactionStatus,
   MatchOfferParams,
-} from "../BasePreMarket";
+} from "../base/BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
 
 /**

@@ -1,5 +1,5 @@
 import { ethers } from "ethers";
-import { TransactionCallbacks } from "../BasePreMarket";
+import { TransactionCallbacks } from "../base/BasePreMarket";
 
 // Debug log prefixes with colors
 export const LOG_PREFIXES = {
@@ -109,7 +109,7 @@ export const signAndSendTransaction = async (
       txHash = signedTx.hash;
     } else {
       // Assume it's a SendTransactionMutateAsync function
-      const signedTx = await(wallet as ethers.Signer).sendTransaction(
+      const signedTx = await (wallet as ethers.Signer).sendTransaction(
         transaction
       );
       txHash = signedTx.hash;

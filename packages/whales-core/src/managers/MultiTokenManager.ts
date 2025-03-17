@@ -1,9 +1,9 @@
 import { Connection } from "@solana/web3.js";
 import { ethers } from "ethers";
-import { BaseToken, TokenInfo } from "./BaseToken";
-import { TokenEVM } from "./TokenEVM";
-import { TokenSolana } from "./TokenSolana";
+import { BaseToken, TokenInfo } from "../base/BaseToken";
 import BN from "bn.js";
+import { TokenSolana } from "../tokens/TokenSolana";
+import { TokenEVM } from "../tokens/TokenEVM";
 
 /**
  * Interface for token identification

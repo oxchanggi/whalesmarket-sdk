@@ -11,7 +11,7 @@ import {
   TransactionStatus,
   SignerType,
   MatchOfferParams,
-} from "./BasePreMarket";
+} from "@whales/core";
 import PreMarketOriginal from "./PreMarketSolana/PreMarket";
 import { NATIVE_MINT, getMint } from "@solana/spl-token";
 import { WalletContextState } from "@solana/wallet-adapter-react";

@@ -4,7 +4,7 @@ import {
   TransactionCallbacks,
   TransactionResult,
   TransactionStatus,
-} from "../BasePreMarket";
+} from "../base/BasePreMarket";
 import { WalletContextState } from "@solana/wallet-adapter-react";
 
 /**
