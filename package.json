@@ -92,6 +92,7 @@
     "@wallet-standard/react": "^0.1.4",
     "axios": "^1.6.7",
     "bn.js": "^5.2.1",
+    "dotenv": "^16.4.7",
     "ethers": "^5.8.0",
     "lodash": "^4.17.21",
     "react": ">=16.8.0",

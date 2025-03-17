@@ -1,5 +1,9 @@
 import { ethers } from "ethers";
-import { PreMarketContract } from "@whales/core";
+import { PreMarketContract } from "../packages/whales-core/src/pre-markets/PreMarketEVM";
+import {
+  createEVMTransactionParams,
+  signAndSendTransaction,
+} from "../packages/whales-core/src/utils";
 import * as dotenv from "dotenv";
 
 // Load environment variables
@@ -67,17 +71,20 @@ async function main() {
     console.log("Offer transaction created, preparing to sign and send...");
 
     // Sign and send transaction
-    const result = await preMarket.signAndSendTransaction(offerTx, {
-      onSubmit: (txHash) => {
-        console.log(`Transaction sent with hash: ${txHash}`);
-      },
-      onFinally: (status) => {
-        console.log(`Transaction completed with status:`, status);
-      },
-      onError: (error) => {
-        console.error(`Error sending transaction:`, error);
-      },
-    });
+    const result = await signAndSendTransaction(
+      createEVMTransactionParams(offerTx, wallet, () => provider),
+      {
+        onSubmit: (txHash) => {
+          console.log(`Transaction sent with hash: ${txHash}`);
+        },
+        onFinally: (status) => {
+          console.log(`Transaction completed with status:`, status);
+        },
+        onError: (error) => {
+          console.error(`Error sending transaction:`, error);
+        },
+      }
+    );
 
     console.log("Transaction result:", {
       hash: result.transaction.hash,

@@ -14,13 +14,13 @@
     "prepublishOnly": "pnpm run clean && pnpm run build"
   },
   "dependencies": {
-    "@solana/web3.js": "^1.68.0",
-    "@solana/spl-token": "^0.3.9"
+    "@solana/spl-token": "^0.3.9",
+    "@solana/web3.js": "^1.68.0"
   },
   "peerDependencies": {
-    "@solana/web3.js": "^1.68.0",
     "@solana/spl-token": "^0.3.9",
-    "@solana/wallet-adapter-react": "^0.15.35"
+    "@solana/wallet-adapter-react": "^0.15.35",
+    "@solana/web3.js": "^1.68.0"
   },
   "devDependencies": {
     "@rollup/plugin-commonjs": "^22.0.1",
