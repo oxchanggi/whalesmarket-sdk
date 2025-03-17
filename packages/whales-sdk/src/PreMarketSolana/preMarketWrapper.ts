@@ -10,7 +10,6 @@ import {
 } from "@solana/web3.js";
 import { JitoJsonRpcClient } from "../jito-sdk";
 import PreMarket from "./PreMarket";
-import { signAndSerializeV0Tx } from "../jito-sdk/utils";
 import {
   WhalesMarketWrapper as PreMarketWrapperType,
   IDL,
@@ -59,77 +58,6 @@ export class PreMarketWrapper {
         connection: this.preMarketSdk.connection,
       }
     );
-  }
-
-  async bundleCancelOrders(
-    operator: PublicKey,
-    orders: number[],
-    signers: Keypair[],
-    signAllTransactions: any
-  ) {
-    const batchSize = 2;
-    const txDataList: {
-      message: string;
-      serialized_tx: string;
-      transaction: any;
-    }[] = [];
-
-    for (let i = 0; i < orders.length; i += batchSize) {
-      const batch = orders.slice(i, i + batchSize);
-
-      const addPriorityFee = ComputeBudgetProgram.setComputeUnitPrice({
-        microLamports: 800_000,
-      });
-
-      const instructions = (
-        await this.preMarketSdk.cancelOrders(batch, operator)
-      ).instructions;
-
-      const txData = await signAndSerializeV0Tx(
-        this.preMarketSdk.connection,
-        operator,
-        signers,
-        [addPriorityFee, ...instructions],
-        []
-      );
-
-      txDataList.push(txData);
-    }
-
-    const signedTxs = await signAllTransactions(
-      txDataList.map((tx) => tx.transaction)
-    );
-
-    const txHashes = await Promise.all(
-      signedTxs.map((tx: any) =>
-        this.preMarketSdk.connection.sendTransaction(tx, {
-          maxRetries: 0,
-          skipPreflight: true,
-          preflightCommitment: "processed",
-        })
-      )
-    );
-
-    // spam send tx
-    try {
-      for (let i = 0; i < 5; i++) {
-        await Promise.all(
-          signedTxs.map((tx: any) =>
-            this.preMarketSdk.connection.sendTransaction(tx, {
-              maxRetries: 0,
-              skipPreflight: true,
-              preflightCommitment: "processed",
-            })
-          )
-        );
-
-        await new Promise((resolve) => setTimeout(resolve, 500));
-      }
-    } catch (e) {
-      console.log("Spam sending tx error", e);
-    }
-
-    return txHashes;
   }
 
   async matchOffer(
