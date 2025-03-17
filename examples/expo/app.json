@@ -1,0 +1,21 @@
+{
+  "expo": {
+    "name": "Whales SDK Expo Example",
+    "slug": "whales-sdk-expo-example",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "icon": "./assets/icon.png",
+    "userInterfaceStyle": "light",
+    "assetBundlePatterns": ["**/*"],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.whales.sdkexample"
+    },
+    "android": {
+      "package": "com.whales.sdkexample"
+    },
+    "web": {
+      "favicon": "./assets/icon.png"
+    }
+  }
+}
