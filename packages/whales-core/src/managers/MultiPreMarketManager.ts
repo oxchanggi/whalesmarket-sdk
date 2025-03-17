@@ -1,4 +1,4 @@
-import { Connection, PublicKey, Transaction } from "@solana/web3.js";
+import { Connection, Transaction } from "@solana/web3.js";
 import { ethers } from "ethers";
 import {
   BasePreMarket,
@@ -6,10 +6,10 @@ import {
   MarketConfig,
   OfferData,
   OrderData,
-  TransactionCallbacks,
-  TransactionResult,
+  MatchOfferParams,
 } from "../base/BasePreMarket";
 import { PreMarketContract } from "../pre-markets/PreMarketEVM";
+
 /**
  * Interface for market identification
  */
@@ -18,14 +18,25 @@ export interface MarketIdentifier {
   chain: "solana" | "evm";
 }
 
-type PreMarketSolana = BasePreMarket<Transaction, any>;
-
 /**
- * Class for managing multiple pre-markets across different chains
+ * Abstract class for managing multiple pre-markets across different chains
+ * T is the type of Solana PreMarket implementation (PreMarketSolana or PreMarketSolanaMobile)
  */
-export class MultiPreMarketManager {
-  private solanaMarkets: Map<string, PreMarketSolana> = new Map();
-  private evmMarkets: Map<string, PreMarketContract> = new Map();
+export abstract class MultiPreMarketManager<
+  T extends BasePreMarket<Transaction, any>
+> {
+  protected solanaMarkets: Map<string, T> = new Map();
+  protected evmMarkets: Map<string, PreMarketContract> = new Map();
+
+  /**
+   * Create a new Solana PreMarket instance
+   * This method should be implemented by concrete classes
+   */
+  protected abstract createSolanaPreMarket(
+    connection: Connection,
+    programId: string,
+    configAccountPubKey?: string
+  ): Promise<T>;
 
   /**
    * Add a Solana pre-market to the manager
@@ -33,12 +44,39 @@ export class MultiPreMarketManager {
    * @param connection Solana connection
    * @param programId Program ID for the pre-market
    * @param configAccountPubKey Optional config account public key
-   * @returns The added PreMarketSolana instance
+   * @returns The added PreMarket instance
    */
   public async addSolanaMarket(
     id: string,
-    preMarket: PreMarketSolana
-  ): Promise<PreMarketSolana> {
+    connection: Connection,
+    programId: string,
+    configAccountPubKey?: string
+  ): Promise<T> {
+    if (this.solanaMarkets.has(id) || this.evmMarkets.has(id)) {
+      throw new Error(`Market with ID ${id} already exists`);
+    }
+
+    const preMarket = await this.createSolanaPreMarket(
+      connection,
+      programId,
+      configAccountPubKey
+    );
+
+    if (configAccountPubKey) {
+      await preMarket.initialize({ configAccountPubKey });
+    }
+
+    this.solanaMarkets.set(id, preMarket);
+    return preMarket;
+  }
+
+  /**
+   * Add an existing Solana pre-market to the manager
+   * @param id Unique identifier for this market
+   * @param preMarket The PreMarket instance to add
+   * @returns The added PreMarket instance
+   */
+  public async addExistingSolanaMarket(id: string, preMarket: T): Promise<T> {
     if (this.solanaMarkets.has(id) || this.evmMarkets.has(id)) {
       throw new Error(`Market with ID ${id} already exists`);
     }
@@ -92,9 +130,9 @@ export class MultiPreMarketManager {
   /**
    * Get a Solana pre-market by ID
    * @param id The market ID
-   * @returns The PreMarketSolana instance
+   * @returns The PreMarket instance
    */
-  public getSolanaMarket(id: string): PreMarketSolana {
+  public getSolanaMarket(id: string): T {
     const market = this.solanaMarkets.get(id);
     if (!market) {
       throw new Error(`Solana market with ID ${id} not found`);
@@ -207,6 +245,23 @@ export class MultiPreMarketManager {
   }
 
   /**
+   * Match offers in a specific market
+   * @param marketId The market ID
+   * @param params Parameters for matching offers
+   * @returns Transaction (type depends on the chain)
+   */
+  public async matchOffer(
+    marketId: string,
+    params: MatchOfferParams
+  ): Promise<Transaction | ethers.PopulatedTransaction> {
+    const market = this.getMarket(marketId);
+    if ("matchOffer" in market) {
+      return (market as any).matchOffer(params);
+    }
+    throw new Error("Market does not support matchOffer operation");
+  }
+
+  /**
    * Fill an existing offer in a specific market
    * @param marketId The market ID
    * @param offerId The ID of the offer to fill
@@ -275,32 +330,17 @@ export class MultiPreMarketManager {
   }
 
   /**
-   * Sign and send a transaction for a specific market
-   * @param marketId The market ID
-   * @param tx The transaction to sign and send
-   * @param callbacks Optional callbacks for transaction events
-   * @returns Transaction result with status
-   */
-  public async signAndSendTransaction(
-    marketId: string,
-    tx: Transaction | ethers.PopulatedTransaction,
-    callbacks?: TransactionCallbacks
-  ): Promise<TransactionResult> {
-    throw new Error("Not implemented");
-  }
-
-  /**
    * Execute a batch of operations across multiple markets
    * @param operations Array of operations to execute
    * @returns Results of the operations
    */
-  public async executeBatch<T>(
+  public async executeBatch<R>(
     operations: Array<{
       marketId: string;
-      operation: (market: BasePreMarket<any>) => Promise<T>;
+      operation: (market: BasePreMarket<any>) => Promise<R>;
     }>
-  ): Promise<T[]> {
-    const results: T[] = [];
+  ): Promise<R[]> {
+    const results: R[] = [];
 
     for (const op of operations) {
       const market = this.getMarket(op.marketId);
