@@ -5,7 +5,11 @@
     "rootDir": "./src",
     "declaration": true,
     "declarationDir": "./dist",
-    "emitDeclarationOnly": true
+    "emitDeclarationOnly": false,
+    "module": "esnext",
+    "moduleResolution": "node",
+    "target": "es2015",
+    "sourceMap": true
   },
   "include": ["src/**/*"],
   "references": [{ "path": "../whales-core" }]

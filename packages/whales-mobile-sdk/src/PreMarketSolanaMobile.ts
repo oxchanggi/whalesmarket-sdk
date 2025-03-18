@@ -204,7 +204,11 @@ export class PreMarketSolanaMobile extends BasePreMarket<
    * @param programId Program ID for the PreMarket program
    * @param apiBaseUrl Base URL for the API
    */
-  constructor(connection: Connection, programId: string, apiBaseUrl: string) {
+  constructor(
+    connection: Connection,
+    programId: string,
+    apiBaseUrl: string = "http://localhost:3000"
+  ) {
     super();
     this.connection = connection;
     this.adapter = new ApiAnchorAdapter(apiBaseUrl);
