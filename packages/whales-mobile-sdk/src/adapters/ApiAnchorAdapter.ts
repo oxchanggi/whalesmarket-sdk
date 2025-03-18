@@ -7,9 +7,46 @@ import axios from "axios";
  */
 export class ApiAnchorAdapter implements AnchorAdapter {
   private apiBaseUrl: string;
+  private rpc: string;
+  private programId: string;
+  private configAccount: string | null = null;
 
-  constructor(apiBaseUrl: string) {
+  constructor(apiBaseUrl: string, rpc: string, programId: string) {
     this.apiBaseUrl = apiBaseUrl;
+    this.rpc = rpc;
+    this.programId = programId;
+  }
+
+  initialize(configAccount: string) {
+    this.configAccount = configAccount;
+  }
+
+  /**
+   * Get common headers for all API requests
+   */
+  private getCommonHeaders() {
+    if (!this.configAccount) {
+      throw new Error("Config account not initialized");
+    }
+    return {
+      "x-rpc": this.rpc,
+      "x-program-id": this.programId,
+      "x-config-account": this.configAccount,
+    };
+  }
+
+  /**
+   * Get headers for POST requests that need a signer
+   */
+  private getPostHeaders(signer?: string) {
+    const headers = this.getCommonHeaders();
+    if (signer) {
+      return {
+        ...headers,
+        "x-signer": signer,
+      };
+    }
+    return headers;
   }
 
   /**
@@ -29,7 +66,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
    */
   async fetchOfferAccount(offerId: number): Promise<any> {
     try {
-      const response = await axios.get(`${this.apiBaseUrl}/offers/${offerId}`);
+      const response = await axios.get(`${this.apiBaseUrl}/offers/${offerId}`, {
+        headers: this.getCommonHeaders(),
+      });
       return response.data;
     } catch (error) {
       console.error(`Error fetching offer account ${offerId}:`, error);
@@ -42,7 +81,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
    */
   async fetchOrderAccount(orderId: number): Promise<any> {
     try {
-      const response = await axios.get(`${this.apiBaseUrl}/orders/${orderId}`);
+      const response = await axios.get(`${this.apiBaseUrl}/orders/${orderId}`, {
+        headers: this.getCommonHeaders(),
+      });
       return response.data;
     } catch (error) {
       console.error(`Error fetching order account ${orderId}:`, error);
@@ -56,7 +97,8 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   async fetchConfigAccount(configAccountPubKey: string): Promise<any> {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/config/${configAccountPubKey}`
+        `${this.apiBaseUrl}/config/${configAccountPubKey}`,
+        { headers: this.getCommonHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -74,7 +116,8 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   async fetchTokenConfigAccount(tokenId: number): Promise<any> {
     try {
       const response = await axios.get(
-        `${this.apiBaseUrl}/tokens/${tokenId}/config`
+        `${this.apiBaseUrl}/tokens/${tokenId}/config`,
+        { headers: this.getCommonHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -90,7 +133,8 @@ export class ApiAnchorAdapter implements AnchorAdapter {
     try {
       const tokenAddress = tokenPubKey.toString();
       const response = await axios.get(
-        `${this.apiBaseUrl}/ex-tokens/${tokenAddress}`
+        `${this.apiBaseUrl}/ex-tokens/${tokenAddress}`,
+        { headers: this.getCommonHeaders() }
       );
       return response.data;
     } catch (error) {
@@ -107,7 +151,11 @@ export class ApiAnchorAdapter implements AnchorAdapter {
    */
   async bootstrap(configAccountPubKey: string): Promise<void> {
     try {
-      await axios.post(`${this.apiBaseUrl}/bootstrap`, { configAccountPubKey });
+      await axios.post(
+        `${this.apiBaseUrl}/bootstrap`,
+        { configAccountPubKey },
+        { headers: this.getPostHeaders() }
+      );
     } catch (error) {
       console.error(
         `Error bootstrapping with config ${configAccountPubKey}:`,
@@ -122,7 +170,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
    */
   async findIdOffer(): Promise<number> {
     try {
-      const response = await axios.get(`${this.apiBaseUrl}/offers/last-id`);
+      const response = await axios.get(`${this.apiBaseUrl}/offers/last-id`, {
+        headers: this.getCommonHeaders(),
+      });
       return response.data.id;
     } catch (error) {
       console.error("Error finding last offer ID:", error);
@@ -135,7 +185,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
    */
   async findIdOrder(): Promise<number> {
     try {
-      const response = await axios.get(`${this.apiBaseUrl}/orders/last-id`);
+      const response = await axios.get(`${this.apiBaseUrl}/orders/last-id`, {
+        headers: this.getCommonHeaders(),
+      });
       return response.data.id;
     } catch (error) {
       console.error("Error finding last order ID:", error);
@@ -156,15 +208,21 @@ export class ApiAnchorAdapter implements AnchorAdapter {
     signerPublicKey: PublicKey
   ): Promise<Transaction> {
     try {
-      const response = await axios.post(`${this.apiBaseUrl}/offers/create`, {
-        tokenId,
-        type,
-        tokenPublicKey: tokenPublicKey.toString(),
-        amount,
-        value,
-        fullMatch,
-        signerPublicKey: signerPublicKey.toString(),
-      });
+      const response = await axios.post(
+        `${this.apiBaseUrl}/offers/create`,
+        {
+          tokenId,
+          type,
+          tokenPublicKey: tokenPublicKey.toString(),
+          amount,
+          value,
+          fullMatch,
+          signerPublicKey: signerPublicKey.toString(),
+        },
+        {
+          headers: this.getPostHeaders(signerPublicKey.toString()),
+        }
+      );
 
       // Convert the serialized transaction back to a Transaction object
       const serializedTx = response.data.transaction;
@@ -190,6 +248,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
         {
           amount,
           userPublicKey: userPublicKey.toString(),
+        },
+        {
+          headers: this.getPostHeaders(userPublicKey.toString()),
         }
       );
 
@@ -209,7 +270,11 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   async closeUnFullFilledOffer(offerId: number): Promise<Transaction> {
     try {
       const response = await axios.post(
-        `${this.apiBaseUrl}/offers/${offerId}/close`
+        `${this.apiBaseUrl}/offers/${offerId}/close`,
+        {},
+        {
+          headers: this.getPostHeaders(),
+        }
       );
 
       // Convert the serialized transaction back to a Transaction object
@@ -228,7 +293,11 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   async settleOrder(orderId: number): Promise<Transaction> {
     try {
       const response = await axios.post(
-        `${this.apiBaseUrl}/orders/${orderId}/settle`
+        `${this.apiBaseUrl}/orders/${orderId}/settle`,
+        {},
+        {
+          headers: this.getPostHeaders(),
+        }
       );
 
       // Convert the serialized transaction back to a Transaction object
@@ -254,6 +323,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
         {
           tokenPubKey: tokenPubKey.toString(),
           isAccepted,
+        },
+        {
+          headers: this.getPostHeaders(),
         }
       );
 
@@ -292,6 +364,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
             typeof sellerFeeDiscount === "object"
               ? sellerFeeDiscount.toString()
               : sellerFeeDiscount,
+        },
+        {
+          headers: this.getPostHeaders(settleVerifier.toString()),
         }
       );
 
@@ -317,6 +392,9 @@ export class ApiAnchorAdapter implements AnchorAdapter {
         `${this.apiBaseUrl}/orders/${orderId}/cancel`,
         {
           userPublicKey: userPublicKey.toString(),
+        },
+        {
+          headers: this.getPostHeaders(userPublicKey.toString()),
         }
       );
 

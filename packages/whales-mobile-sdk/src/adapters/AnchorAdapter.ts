@@ -5,6 +5,11 @@ import { PublicKey } from "@solana/web3.js";
  */
 export interface AnchorAdapter {
   /**
+   * Initialize the adapter
+   */
+  initialize(configAccount: string): void;
+
+  /**
    * Create a BN instance (replacement for @coral-xyz/anchor BN)
    */
   createBN(value: number): any;

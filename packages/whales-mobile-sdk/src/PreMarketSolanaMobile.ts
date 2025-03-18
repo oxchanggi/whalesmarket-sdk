@@ -211,7 +211,11 @@ export class PreMarketSolanaMobile extends BasePreMarket<
   ) {
     super();
     this.connection = connection;
-    this.adapter = new ApiAnchorAdapter(apiBaseUrl);
+    this.adapter = new ApiAnchorAdapter(
+      apiBaseUrl,
+      connection.rpcEndpoint,
+      programId
+    );
     this.preMarket = new PreMarketOriginalMobile(
       connection,
       programId,
@@ -339,6 +343,7 @@ export class PreMarketSolanaMobile extends BasePreMarket<
   async initialize(config: { configAccountPubKey: string }): Promise<void> {
     await this.preMarket.bootstrap(config.configAccountPubKey);
     this.configAccountPubKey = new PublicKey(config.configAccountPubKey);
+    this.adapter.initialize(config.configAccountPubKey);
   }
 
   /**
