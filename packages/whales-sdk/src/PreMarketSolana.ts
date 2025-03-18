@@ -295,6 +295,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
       offerType,
       exToken,
       newOfferFullMatch,
+      signer,
     } = params;
 
     // Validate input parameters
@@ -318,9 +319,17 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
     }
 
     // Get the signer's public key
-    const signerPublicKey = this.getSignerPublicKey();
-    if (!signerPublicKey) {
-      throw new Error("No signer set or signer has no public key");
+    let signerPublicKey: PublicKey;
+    if (signer) {
+      // Use the provided signer string if available
+      signerPublicKey = new PublicKey(signer);
+    } else {
+      // Otherwise, get from the current signer
+      const currentSignerPublicKey = this.getSignerPublicKey();
+      if (!currentSignerPublicKey) {
+        throw new Error("No signer set or signer has no public key");
+      }
+      signerPublicKey = currentSignerPublicKey;
     }
 
     // Adjust amount by multiplying with 10^6

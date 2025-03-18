@@ -177,6 +177,7 @@ export interface MatchOfferParams {
   offerType: number;
   exToken: string;
   newOfferFullMatch: boolean;
+  signer?: string;
 }
 
 /**
