@@ -9,7 +9,7 @@ RED='\033[0;31m'
 NC='\033[0m' # No Color
 
 # Prompt for version bump type
-echo -e "${YELLOW}Select version bump type for @whalesmarket/core:${NC}"
+echo -e "${YELLOW}Select version bump type for all packages:${NC}"
 echo "1) patch (0.1.1 -> 0.1.2)"
 echo "2) minor (0.1.1 -> 0.2.0)"
 echo "3) major (0.1.1 -> 2.0.0)"
@@ -47,11 +47,18 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}@whalesmarket/core built successfully${NC}"
 
-# Step 2: Update SDK and Mobile SDK dependencies
-echo -e "${GREEN}Step 2: Updating dependencies in other packages...${NC}"
+# Step 2: Update SDK version and dependencies
+echo -e "${GREEN}Step 2: Updating @whalesmarket/sdk version and dependencies...${NC}"
 
 # Update SDK
 cd ../whales-sdk
+echo -e "${GREEN}Updating @whalesmarket/sdk version (${bump_type})...${NC}"
+current_sdk_version=$(node -p "require('./package.json').version")
+pnpm version $bump_type
+new_sdk_version=$(node -p "require('./package.json').version")
+echo -e "${GREEN}SDK version updated: ${current_sdk_version} -> ${new_sdk_version}${NC}"
+
+# Update SDK dependencies
 echo -e "${GREEN}Updating @whalesmarket/sdk dependencies...${NC}"
 # Update publishConfig dependency on core
 node -e "
@@ -72,8 +79,18 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}@whalesmarket/sdk built successfully${NC}"
 
+# Step 3: Update Mobile SDK version and dependencies
+echo -e "${GREEN}Step 3: Updating @whalesmarket/mobile-sdk version and dependencies...${NC}"
+
 # Update Mobile SDK
 cd ../whales-mobile-sdk
+echo -e "${GREEN}Updating @whalesmarket/mobile-sdk version (${bump_type})...${NC}"
+current_mobile_sdk_version=$(node -p "require('./package.json').version")
+pnpm version $bump_type
+new_mobile_sdk_version=$(node -p "require('./package.json').version")
+echo -e "${GREEN}Mobile SDK version updated: ${current_mobile_sdk_version} -> ${new_mobile_sdk_version}${NC}"
+
+# Update dependencies
 echo -e "${GREEN}Updating @whalesmarket/mobile-sdk dependencies...${NC}"
 # Update publishConfig dependency on core
 node -e "
@@ -94,13 +111,13 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}@whalesmarket/mobile-sdk built successfully${NC}"
 
-# Step 3: Publish packages in order
+# Step 4: Publish packages in order
 echo -e "${YELLOW}Do you want to publish the packages? (y/n)${NC}"
 read -r publish
 
 if [ "$publish" = "y" ]; then
   # Publish core first
-  echo -e "${GREEN}Step 3: Publishing packages in order...${NC}"
+  echo -e "${GREEN}Step 4: Publishing packages in order...${NC}"
   echo -e "${GREEN}Publishing @whalesmarket/core v${new_version}...${NC}"
   cd ../whales-core
   pnpm publish --access public --no-git-checks
@@ -111,7 +128,7 @@ if [ "$publish" = "y" ]; then
   echo -e "${GREEN}@whalesmarket/core published successfully${NC}"
 
   # Then SDK
-  echo -e "${GREEN}Publishing @whalesmarket/sdk...${NC}"
+  echo -e "${GREEN}Publishing @whalesmarket/sdk v${new_sdk_version}...${NC}"
   cd ../whales-sdk
   pnpm publish --access public --no-git-checks
   if [ $? -ne 0 ]; then
@@ -121,7 +138,7 @@ if [ "$publish" = "y" ]; then
   echo -e "${GREEN}@whalesmarket/sdk published successfully${NC}"
 
   # Then mobile SDK
-  echo -e "${GREEN}Publishing @whalesmarket/mobile-sdk...${NC}"
+  echo -e "${GREEN}Publishing @whalesmarket/mobile-sdk v${new_mobile_sdk_version}...${NC}"
   cd ../whales-mobile-sdk
   pnpm publish --access public --no-git-checks
   if [ $? -ne 0 ]; then
