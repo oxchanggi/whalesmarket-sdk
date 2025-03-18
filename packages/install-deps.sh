@@ -20,14 +20,14 @@ fi
 echo -e "${GREEN}Root dependencies installed successfully${NC}"
 
 # Install whales-core dependencies
-echo -e "${GREEN}Installing @whales/core dependencies...${NC}"
+echo -e "${GREEN}Installing @whalesmarket/core dependencies...${NC}"
 cd whales-core
 pnpm install
 if [ $? -ne 0 ]; then
-  echo -e "${RED}Failed to install @whales/core dependencies${NC}"
+  echo -e "${RED}Failed to install @whalesmarket/core dependencies${NC}"
   exit 1
 fi
-echo -e "${GREEN}@whales/core dependencies installed successfully${NC}"
+echo -e "${GREEN}@whalesmarket/core dependencies installed successfully${NC}"
 
 # Install whales-sdk dependencies
 echo -e "${GREEN}Installing whales-sdk dependencies...${NC}"

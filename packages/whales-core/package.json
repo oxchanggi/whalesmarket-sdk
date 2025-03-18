@@ -1,5 +1,5 @@
 {
-  "name": "@whales/core",
+  "name": "@whalesmarket/core",
   "version": "0.1.0",
   "description": "Core functionality for Whales SDK",
   "main": "dist/index.js",

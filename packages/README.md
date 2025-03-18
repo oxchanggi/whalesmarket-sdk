@@ -7,7 +7,7 @@ This monorepo contains two versions of the Whales SDK:
 
 ## Packages
 
-### @whales/core
+### @whalesmarket/core
 
 Core functionality and interfaces shared between both SDKs.
 

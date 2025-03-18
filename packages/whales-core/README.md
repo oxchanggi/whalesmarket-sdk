@@ -1,4 +1,4 @@
-# @whales/core
+# @whalesmarket/core
 
 Core functionality and interfaces shared between Whales SDK packages.
 
@@ -8,19 +8,19 @@ This package is primarily used as a dependency for other Whales SDK packages. Ho
 
 ```bash
 # Using npm
-npm install @whales/core
+npm install @whalesmarket/core
 
 # Using yarn
-yarn add @whales/core
+yarn add @whalesmarket/core
 
 # Using pnpm
-pnpm add @whales/core
+pnpm add @whalesmarket/core
 ```
 
 ## Usage
 
 ```typescript
-import { BasePreMarket, OfferData, OrderData } from '@whales/core';
+import { BasePreMarket, OfferData, OrderData } from '@whalesmarket/core';
 
 // Extend BasePreMarket to create your own implementation
 class MyPreMarket extends BasePreMarket<MyTransaction, MySigner> {

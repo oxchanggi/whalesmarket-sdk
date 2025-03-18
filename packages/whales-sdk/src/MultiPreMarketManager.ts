@@ -1,5 +1,5 @@
 import { Connection, Transaction } from "@solana/web3.js";
-import { MultiPreMarketManager as BaseMultiPreMarketManager } from "@whales/core";
+import { MultiPreMarketManager as BaseMultiPreMarketManager } from "@whalesmarket/core";
 import { PreMarketSolana } from "./PreMarketSolana";
 
 /**

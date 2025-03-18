@@ -5,7 +5,7 @@ import { Transaction } from "@solana/web3.js";
 import {
   WhalesPreMarketProvider as BaseWhalesPreMarketProvider,
   WhalesPreMarketProviderProps,
-} from "@whales/core";
+} from "@whalesmarket/core";
 import { PreMarketSolana } from "../PreMarketSolana";
 import { MultiPreMarketManager } from "../MultiPreMarketManager";
 
