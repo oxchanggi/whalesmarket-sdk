@@ -8,11 +8,38 @@ YELLOW='\033[1;33m'
 RED='\033[0;31m'
 NC='\033[0m' # No Color
 
+# Prompt for version bump type
+echo -e "${YELLOW}Select version bump type for @whalesmarket/core:${NC}"
+echo "1) patch (0.1.1 -> 0.1.2)"
+echo "2) minor (0.1.1 -> 0.2.0)"
+echo "3) major (0.1.1 -> 2.0.0)"
+read -r version_type
+
+# Validate input
+if [[ ! "$version_type" =~ ^[1-3]$ ]]; then
+  echo -e "${RED}Invalid selection. Exiting.${NC}"
+  exit 1
+fi
+
+# Map input to version bump type
+case $version_type in
+  1) bump_type="patch" ;;
+  2) bump_type="minor" ;;
+  3) bump_type="major" ;;
+esac
+
 echo -e "${YELLOW}Building and publishing packages...${NC}"
 
-# Build whales-core
-echo -e "${GREEN}Building @whalesmarket/core...${NC}"
+# Step 1: Update core version and build
+echo -e "${GREEN}Step 1: Updating @whalesmarket/core version (${bump_type})...${NC}"
 cd whales-core
+current_version=$(node -p "require('./package.json').version")
+pnpm version $bump_type
+new_version=$(node -p "require('./package.json').version")
+echo -e "${GREEN}Version updated: ${current_version} -> ${new_version}${NC}"
+
+# Build core
+echo -e "${GREEN}Building @whalesmarket/core...${NC}"
 pnpm run build
 if [ $? -ne 0 ]; then
   echo -e "${RED}Failed to build @whalesmarket/core${NC}"
@@ -20,9 +47,24 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}@whalesmarket/core built successfully${NC}"
 
-# Build whales-sdk
-echo -e "${GREEN}Building @whalesmarket/sdk...${NC}"
+# Step 2: Update SDK and Mobile SDK dependencies
+echo -e "${GREEN}Step 2: Updating dependencies in other packages...${NC}"
+
+# Update SDK
 cd ../whales-sdk
+echo -e "${GREEN}Updating @whalesmarket/sdk dependencies...${NC}"
+# Update publishConfig dependency on core
+node -e "
+  const fs = require('fs');
+  const pkg = require('./package.json');
+  if (!pkg.publishConfig) pkg.publishConfig = {};
+  if (!pkg.publishConfig.dependencies) pkg.publishConfig.dependencies = {};
+  pkg.publishConfig.dependencies['@whalesmarket/core'] = '^${new_version}';
+  fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2));
+" 
+echo -e "${GREEN}Updated @whalesmarket/sdk to depend on @whalesmarket/core ^${new_version}${NC}"
+
+# Build SDK
 pnpm run build
 if [ $? -ne 0 ]; then
   echo -e "${RED}Failed to build @whalesmarket/sdk${NC}"
@@ -30,9 +72,21 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}@whalesmarket/sdk built successfully${NC}"
 
-# Build whales-mobile-sdk
-echo -e "${GREEN}Building @whalesmarket/mobile-sdk...${NC}"
+# Update Mobile SDK
 cd ../whales-mobile-sdk
+echo -e "${GREEN}Updating @whalesmarket/mobile-sdk dependencies...${NC}"
+# Update publishConfig dependency on core
+node -e "
+  const fs = require('fs');
+  const pkg = require('./package.json');
+  if (!pkg.publishConfig) pkg.publishConfig = {};
+  if (!pkg.publishConfig.dependencies) pkg.publishConfig.dependencies = {};
+  pkg.publishConfig.dependencies['@whalesmarket/core'] = '^${new_version}';
+  fs.writeFileSync('./package.json', JSON.stringify(pkg, null, 2));
+"
+echo -e "${GREEN}Updated @whalesmarket/mobile-sdk to depend on @whalesmarket/core ^${new_version}${NC}"
+
+# Build mobile SDK
 pnpm run build
 if [ $? -ne 0 ]; then
   echo -e "${RED}Failed to build @whalesmarket/mobile-sdk${NC}"
@@ -40,35 +94,36 @@ if [ $? -ne 0 ]; then
 fi
 echo -e "${GREEN}@whalesmarket/mobile-sdk built successfully${NC}"
 
-# Publish packages
+# Step 3: Publish packages in order
 echo -e "${YELLOW}Do you want to publish the packages? (y/n)${NC}"
 read -r publish
 
 if [ "$publish" = "y" ]; then
-  # Publish whales-core
-  echo -e "${GREEN}Publishing @whalesmarket/core...${NC}"
+  # Publish core first
+  echo -e "${GREEN}Step 3: Publishing packages in order...${NC}"
+  echo -e "${GREEN}Publishing @whalesmarket/core v${new_version}...${NC}"
   cd ../whales-core
-  pnpm publish --access public
+  pnpm publish --access public --no-git-checks
   if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to publish @whalesmarket/core${NC}"
     exit 1
   fi
   echo -e "${GREEN}@whalesmarket/core published successfully${NC}"
 
-  # Publish whales-sdk
+  # Then SDK
   echo -e "${GREEN}Publishing @whalesmarket/sdk...${NC}"
   cd ../whales-sdk
-  pnpm publish --access public
+  pnpm publish --access public --no-git-checks
   if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to publish @whalesmarket/sdk${NC}"
     exit 1
   fi
   echo -e "${GREEN}@whalesmarket/sdk published successfully${NC}"
 
-  # Publish whales-mobile-sdk
+  # Then mobile SDK
   echo -e "${GREEN}Publishing @whalesmarket/mobile-sdk...${NC}"
   cd ../whales-mobile-sdk
-  pnpm publish --access public
+  pnpm publish --access public --no-git-checks
   if [ $? -ne 0 ]; then
     echo -e "${RED}Failed to publish @whalesmarket/mobile-sdk${NC}"
     exit 1
