@@ -22,14 +22,24 @@ export default {
   ],
   plugins: [
     peerDepsExternal(),
-    resolve(),
+    resolve({
+      extensions: [".js", ".jsx", ".ts", ".tsx"],
+      preferBuiltins: true,
+    }),
     commonjs(),
     typescript({
       useTsconfigDeclarationDir: true,
       tsconfigOverride: {
         exclude: ["**/__tests__", "**/*.test.ts"],
+        compilerOptions: {
+          module: "esnext",
+        },
       },
     }),
     json(),
+  ],
+  external: [
+    ...Object.keys(pkg.dependencies || {}),
+    ...Object.keys(pkg.peerDependencies || {}),
   ],
 };
