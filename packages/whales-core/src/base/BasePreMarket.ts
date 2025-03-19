@@ -6,32 +6,32 @@
  */
 export abstract class BasePreMarket<T, S extends SignerType = SignerType> {
   /**
-   * The current signer
+   * The current public key
    * @protected
    */
-  protected _signer?: S;
+  protected _pubkey?: S;
 
   /**
-   * Set the signer for this PreMarket instance
-   * @param signer The signer to use
+   * Set the public key for this PreMarket instance
+   * @param pubkey The public key to use
    */
-  setSigner(signer: S): void {
-    this._signer = signer;
+  setPubkey(pubkey: S): void {
+    this._pubkey = pubkey;
   }
 
   /**
-   * Remove the current signer from this PreMarket instance
+   * Remove the current public key from this PreMarket instance
    */
-  removeSigner(): void {
-    this._signer = undefined;
+  removePubkey(): void {
+    this._pubkey = undefined;
   }
 
   /**
-   * Get the current signer
-   * @returns The current signer or undefined if not set
+   * Get the current public key
+   * @returns The current public key or undefined if not set
    */
-  getSigner(): S | undefined {
-    return this._signer;
+  getPubkey(): S | undefined {
+    return this._pubkey;
   }
 
   /**

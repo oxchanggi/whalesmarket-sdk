@@ -79,7 +79,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
     tx: Transaction,
     callbacks?: TransactionCallbacks
   ): Promise<TransactionResult> {
-    if (!this._signer) {
+    if (!this._pubkey) {
       throw new Error("No signer set. Please call setSigner() first.");
     }
 
@@ -92,17 +92,17 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
       let signature: string;
 
       // Handle different signer types
-      if (this._signer instanceof Keypair) {
+      if (this._pubkey instanceof Keypair) {
         // Sign with Keypair
-        tx.sign(this._signer);
+        tx.sign(this._pubkey);
         signature = await this.connection.sendRawTransaction(tx.serialize());
       } else {
         // Sign with WalletContextState
-        if (!this._signer.signTransaction) {
+        if (!this._pubkey.signTransaction) {
           throw new Error("Wallet does not support signing transactions");
         }
 
-        const signedTx = await this._signer.signTransaction(tx);
+        const signedTx = await this._pubkey.signTransaction(tx);
         signature = await this.connection.sendRawTransaction(
           signedTx.serialize()
         );
@@ -143,14 +143,14 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
    * @returns The public key of the current signer
    */
   getSignerPublicKey(): PublicKey | null {
-    if (!this._signer) {
+    if (!this._pubkey) {
       return null;
     }
 
-    if (this._signer instanceof Keypair) {
-      return this._signer.publicKey;
+    if (this._pubkey instanceof Keypair) {
+      return this._pubkey.publicKey;
     } else {
-      return this._signer.publicKey || null;
+      return this._pubkey.publicKey || null;
     }
   }
 

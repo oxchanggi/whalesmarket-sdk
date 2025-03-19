@@ -252,87 +252,18 @@ export class PreMarketSolanaMobile extends BasePreMarket<
   }
 
   /**
-   * Sign and send a transaction
-   * @param tx The transaction to sign and send
-   * @param callbacks Optional callbacks for transaction events
-   * @returns The transaction result
-   */
-  async signAndSendTransaction(
-    tx: Transaction,
-    callbacks?: TransactionCallbacks
-  ): Promise<TransactionResult> {
-    if (!this._signer) {
-      throw new Error("No signer set. Please call setSigner() first.");
-    }
-
-    try {
-      // Add recent blockhash
-      tx.recentBlockhash = (
-        await this.connection.getLatestBlockhash()
-      ).blockhash;
-
-      let signature: string;
-
-      // Handle different signer types
-      if (this._signer instanceof Keypair) {
-        // Sign with Keypair
-        tx.sign(this._signer);
-        signature = await this.connection.sendRawTransaction(tx.serialize());
-      } else {
-        // Sign with WalletContextState
-        if (!this._signer.signTransaction) {
-          throw new Error("Wallet does not support signing transactions");
-        }
-
-        const signedTx = await this._signer.signTransaction(tx);
-        signature = await this.connection.sendRawTransaction(
-          signedTx.serialize()
-        );
-      }
-
-      // Call onSubmit callback if provided
-      if (callbacks?.onSubmit) {
-        await callbacks.onSubmit(signature);
-      }
-
-      // Get transaction status
-      const status = await this.getTransactionStatus(signature);
-
-      // Call onFinally callback if provided
-      if (callbacks?.onFinally) {
-        await callbacks.onFinally({
-          ...status,
-          txHash: signature,
-        });
-      }
-
-      return {
-        transaction: { hash: signature },
-        status,
-      };
-    } catch (error) {
-      // Call onError callback if provided
-      if (callbacks?.onError && error instanceof Error) {
-        await callbacks.onError(error);
-      }
-
-      throw error;
-    }
-  }
-
-  /**
    * Get the public key of the current signer
    * @returns The public key of the current signer
    */
   getSignerPublicKey(): PublicKey | null {
-    if (!this._signer) {
+    if (!this._pubkey) {
       return null;
     }
 
-    if (this._signer instanceof Keypair) {
-      return this._signer.publicKey;
+    if (this._pubkey instanceof Keypair) {
+      return this._pubkey.publicKey;
     } else {
-      return this._signer.publicKey || null;
+      return this._pubkey.publicKey || null;
     }
   }
 
