@@ -15,10 +15,7 @@ import { getTokenDecimals, parseTokenAmount } from "../utils/token";
 /**
  * Class for interacting with the PreMarket contract
  */
-export class PreMarketContract extends BasePreMarket<
-  ethers.PopulatedTransaction,
-  ethers.Wallet | ethers.Signer
-> {
+export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction> {
   private contract: PreMarket;
   // ETH address constant (address(0))
   private readonly ETH_ADDRESS = "0x0000000000000000000000000000000000000000";

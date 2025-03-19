@@ -4,7 +4,7 @@
  * @template T The transaction type (Solana web3 Transaction or ethers.PopulatedTransaction)
  * @template S The signer type (Solana Keypair or ethers.Wallet)
  */
-export abstract class BasePreMarket<T, S extends SignerType = SignerType> {
+export abstract class BasePreMarket<T, S extends string = string> {
   /**
    * The current public key
    * @protected

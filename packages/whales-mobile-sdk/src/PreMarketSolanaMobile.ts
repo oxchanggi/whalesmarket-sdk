@@ -188,10 +188,7 @@ class PreMarketWrapperMobile {
  * Mobile-friendly implementation of PreMarketSolana
  * Uses API calls instead of Anchor
  */
-export class PreMarketSolanaMobile extends BasePreMarket<
-  Transaction,
-  SolanaSigner
-> {
+export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
   private preMarket: PreMarketOriginalMobile;
   private preMarketWrapper: PreMarketWrapperMobile;
   private connection: Connection;
@@ -260,11 +257,7 @@ export class PreMarketSolanaMobile extends BasePreMarket<
       return null;
     }
 
-    if (this._pubkey instanceof Keypair) {
-      return this._pubkey.publicKey;
-    } else {
-      return this._pubkey.publicKey || null;
-    }
+    return new PublicKey(this._pubkey);
   }
 
   /**

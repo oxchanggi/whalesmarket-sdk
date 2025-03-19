@@ -27,7 +27,7 @@ export type SolanaSigner = Keypair | WalletContextState;
  * Solana implementation of the PreMarket
  * Extends BasePreMarket and wraps the original PreMarket implementation
  */
-export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
+export class PreMarketSolana extends BasePreMarket<Transaction> {
   private preMarket: PreMarketOriginal;
   private preMarketWrapper: PreMarketWrapper;
   private connection: Connection;
@@ -70,75 +70,6 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
   }
 
   /**
-   * Sign and send a transaction
-   * @param tx The transaction to sign and send
-   * @param callbacks Optional callbacks for transaction events
-   * @returns The transaction result
-   */
-  async signAndSendTransaction(
-    tx: Transaction,
-    callbacks?: TransactionCallbacks
-  ): Promise<TransactionResult> {
-    if (!this._pubkey) {
-      throw new Error("No signer set. Please call setSigner() first.");
-    }
-
-    try {
-      // Add recent blockhash
-      tx.recentBlockhash = (
-        await this.connection.getLatestBlockhash()
-      ).blockhash;
-
-      let signature: string;
-
-      // Handle different signer types
-      if (this._pubkey instanceof Keypair) {
-        // Sign with Keypair
-        tx.sign(this._pubkey);
-        signature = await this.connection.sendRawTransaction(tx.serialize());
-      } else {
-        // Sign with WalletContextState
-        if (!this._pubkey.signTransaction) {
-          throw new Error("Wallet does not support signing transactions");
-        }
-
-        const signedTx = await this._pubkey.signTransaction(tx);
-        signature = await this.connection.sendRawTransaction(
-          signedTx.serialize()
-        );
-      }
-
-      // Call onSubmit callback if provided
-      if (callbacks?.onSubmit) {
-        await callbacks.onSubmit(signature);
-      }
-
-      // Get transaction status
-      const status = await this.getTransactionStatus(signature);
-
-      // Call onFinally callback if provided
-      if (callbacks?.onFinally) {
-        await callbacks.onFinally({
-          ...status,
-          txHash: signature,
-        });
-      }
-
-      return {
-        transaction: { hash: signature },
-        status,
-      };
-    } catch (error) {
-      // Call onError callback if provided
-      if (callbacks?.onError && error instanceof Error) {
-        await callbacks.onError(error);
-      }
-
-      throw error;
-    }
-  }
-
-  /**
    * Get the public key of the current signer
    * @returns The public key of the current signer
    */
@@ -147,11 +78,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
       return null;
     }
 
-    if (this._pubkey instanceof Keypair) {
-      return this._pubkey.publicKey;
-    } else {
-      return this._pubkey.publicKey || null;
-    }
+    return new PublicKey(this._pubkey);
   }
 
   /**
@@ -518,6 +445,6 @@ export class PreMarketSolana extends BasePreMarket<Transaction, SolanaSigner> {
    * @returns Transaction data
    */
   async cancelOrder(orderId: number): Promise<Transaction> {
-    return this.preMarket.cancelOrder(orderId, this.getSigner()?.publicKey!);
+    return this.preMarket.cancelOrder(orderId, this.getSignerPublicKey()!);
   }
 }
