@@ -150,19 +150,19 @@ export class ApiAnchorAdapter implements AnchorAdapter {
    * Bootstrap the PreMarket
    */
   async bootstrap(configAccountPubKey: string): Promise<void> {
-    try {
-      await axios.post(
-        `${this.apiBaseUrl}/bootstrap`,
-        { configAccountPubKey },
-        { headers: this.getPostHeaders() }
-      );
-    } catch (error) {
-      console.error(
-        `Error bootstrapping with config ${configAccountPubKey}:`,
-        error
-      );
-      throw new Error(`Failed to bootstrap: ${error}`);
-    }
+    // try {
+    //   await axios.post(
+    //     `${this.apiBaseUrl}/bootstrap`,
+    //     { configAccountPubKey },
+    //     { headers: this.getPostHeaders() }
+    //   );
+    // } catch (error) {
+    //   console.error(
+    //     `Error bootstrapping with config ${configAccountPubKey}:`,
+    //     error
+    //   );
+    //   throw new Error(`Failed to bootstrap: ${error}`);
+    // }
   }
 
   /**
