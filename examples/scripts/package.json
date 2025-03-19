@@ -20,6 +20,7 @@
     "node": ">=18.0.0"
   },
   "dependencies": {
-    "@whalesmarket/mobile-sdk": "workspace:^"
+    "@whalesmarket/mobile-sdk": "workspace:^",
+    "@whalesmarket/sdk": "workspace:^"
   }
 }
