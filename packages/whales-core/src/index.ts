@@ -1,14 +1,13 @@
-export * from "./base/BasePreMarket";
-export * from "./base/BaseToken";
-export * from "./managers/MultiPreMarketManager";
-export * from "./pre-markets/PreMarketEVM";
+export * from "./base";
+export * from "./pre-markets";
 export * from "./utils/helpers";
 export * from "./utils/transaction";
-
+export * from "./managers";
 // Export React components
 export {
   WhalesPreMarketProvider,
   useWhalesPreMarket,
+  WhalesPreMarketContext,
 } from "./react";
 export type {
   WhalesPreMarketContextValue,

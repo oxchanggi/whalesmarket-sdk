@@ -6,3 +6,4 @@ export type {
   WhalesPreMarketProviderProps,
   UseWhalesPreMarketReturn,
 } from "./types";
+export { WhalesPreMarketContext } from "./WhalesPreMarketContext";
