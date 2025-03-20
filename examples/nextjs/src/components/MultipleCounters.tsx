@@ -1,6 +1,5 @@
 "use client";
 
-import { CountProvider } from "whales-sdk";
 import CounterDisplay from "./CounterDisplay";
 
 const MultipleCounters = () => {
@@ -14,16 +13,10 @@ const MultipleCounters = () => {
       <div style={{ display: "flex", gap: "2rem", marginTop: "1rem" }}>
         <div className="counter-container" style={{ flex: 1 }}>
           <h3>Counter A</h3>
-          <CountProvider initialCount={10}>
-            <CounterDisplay />
-          </CountProvider>
         </div>
 
         <div className="counter-container" style={{ flex: 1 }}>
           <h3>Counter B</h3>
-          <CountProvider initialCount={20}>
-            <CounterDisplay />
-          </CountProvider>
         </div>
       </div>
     </div>

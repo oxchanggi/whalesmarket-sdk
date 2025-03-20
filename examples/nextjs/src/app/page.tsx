@@ -1,11 +1,6 @@
 "use client";
 
-import {
-  useWhalesPreMarket,
-  signAndSendTransaction,
-  createEVMTransactionParams,
-  BlockchainType,
-} from "whales-sdk";
+import { useWhalesPreMarket, signAndSendTransaction } from "@whalesmarket/sdk";
 import { useState, useEffect } from "react";
 import { ConnectWallet } from "../components/ConnectWallet";
 import { ethers } from "ethers";
@@ -113,16 +108,6 @@ export default function Home() {
       );
 
       const signer = provider.getSigner();
-
-      // Create transaction parameters
-      const txParams = createEVMTransactionParams(
-        transaction,
-        signer,
-        () => provider
-      );
-
-      // Send transaction using the wrapper
-      await signAndSendTransaction(txParams, callbacks);
     } catch (error) {
       console.error("Error when creating offer:", error);
     }
@@ -132,7 +117,6 @@ export default function Home() {
     <div>
       <header className="app-header">
         <h1>Whales PreMarket Example</h1>
-        <ConnectWallet />
       </header>
 
       <p>

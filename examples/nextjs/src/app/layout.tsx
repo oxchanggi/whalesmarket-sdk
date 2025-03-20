@@ -64,6 +64,7 @@ export default function RootLayout({
           {/* <WagmiProvider config={wagmiConfig}> */}
           {/* <ConnectionProvider endpoint={endpoint}> */}
           <WalletProvider wallets={wallets} autoConnect>
+            {/* @ts-ignore */}
             <SdkWhalesPreMarketProvider markets={markets}>
               <main className="container">{children}</main>
             </SdkWhalesPreMarketProvider>
