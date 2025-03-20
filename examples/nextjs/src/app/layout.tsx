@@ -3,7 +3,7 @@
 import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
-import { WhalesPreMarketProvider } from "whales-sdk";
+import { SdkWhalesPreMarketProvider } from "@whalesmarket/sdk";
 import { http, createConfig, WagmiProvider } from "wagmi";
 import { mainnet } from "wagmi/chains";
 import {
@@ -61,15 +61,15 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <QueryClientProvider client={queryClient}>
-          <WagmiProvider config={wagmiConfig}>
-            <ConnectionProvider endpoint={endpoint}>
-              <WalletProvider wallets={wallets} autoConnect>
-                <WhalesPreMarketProvider markets={markets}>
-                  <main className="container">{children}</main>
-                </WhalesPreMarketProvider>
-              </WalletProvider>
-            </ConnectionProvider>
-          </WagmiProvider>
+          {/* <WagmiProvider config={wagmiConfig}> */}
+          {/* <ConnectionProvider endpoint={endpoint}> */}
+          <WalletProvider wallets={wallets} autoConnect>
+            <SdkWhalesPreMarketProvider markets={markets}>
+              <main className="container">{children}</main>
+            </SdkWhalesPreMarketProvider>
+          </WalletProvider>
+          {/* </ConnectionProvider> */}
+          {/* </WagmiProvider> */}
         </QueryClientProvider>
       </body>
     </html>

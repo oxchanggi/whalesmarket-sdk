@@ -210,12 +210,15 @@ importers:
       '@tanstack/react-query':
         specifier: ^5.67.3
         version: 5.67.3(react@18.2.0)
+      '@whalesmarket/sdk':
+        specifier: workspace:*
+        version: link:../../packages/whales-sdk
       ethers:
         specifier: ^5.7.2
         version: 5.8.0
       next:
         specifier: ^14.0.0
-        version: 14.0.0(@babel/core@7.26.10)(react-dom@18.2.0)(react@18.2.0)
+        version: 14.0.0(@babel/core@7.18.6)(react-dom@18.2.0)(react@18.2.0)
       react:
         specifier: ^18.2.0
         version: 18.2.0
@@ -228,9 +231,6 @@ importers:
       wagmi:
         specifier: 2.5.20
         version: 2.5.20(@tanstack/react-query@5.67.3)(@types/react@18.2.45)(react-dom@18.2.0)(react-native@0.73.4)(react@18.2.0)(rollup@2.76.0)(typescript@5.2.2)(viem@2.23.10)
-      whales-sdk:
-        specifier: file:../..
-        version: file:(@coral-xyz/anchor@0.29.0)(@metaplex-foundation/umi@1.1.1)(@solana/spl-token@0.3.9)(@solana/wallet-adapter-react@0.15.35)(@solana/web3.js@1.98.0)(@tanstack/react-query@5.67.3)(@wallet-standard/react@0.1.4)(ethers@5.8.0)(lodash@4.17.21)(react-dom@18.2.0)(react@18.2.0)(wagmi@2.5.20)
     devDependencies:
       '@types/node':
         specifier: ^20.8.9
@@ -4306,7 +4306,7 @@ packages:
 
   /@expo/bunyan@4.0.1:
     resolution: {integrity: sha512-+Lla7nYSiHZirgK+U/uYzsLv/X+HaJienbD5AKX1UQZHYfWaP+9uuQluRB4GrEVWF0GZ7vEVp/jzaOT9k/SQlg==}
-    engines: {node: '>=0.10.0'}
+    engines: {'0': node >=0.10.0}
     dependencies:
       uuid: 8.3.2
     dev: false
@@ -5512,7 +5512,7 @@ packages:
       qrcode-terminal-nooctal: 0.12.1
       react: 18.2.0
       react-i18next: 13.5.0(i18next@22.5.1)(react-dom@18.2.0)(react-native@0.73.4)(react@18.2.0)
-      react-native: 0.73.4(@babel/core@7.26.10)(@babel/preset-env@7.26.9)(react@18.2.0)
+      react-native: 0.73.4(@babel/core@7.18.6)(@babel/preset-env@7.26.9)(react@18.2.0)
       react-native-webview: 11.26.1(react-native@0.73.4)(react@18.2.0)
       readable-stream: 2.3.8
       rollup-plugin-visualizer: 5.14.0(rollup@2.76.0)
@@ -6295,6 +6295,59 @@ packages:
       - '@babel/preset-env'
       - supports-color
 
+  /@react-native/babel-preset@0.73.21(@babel/core@7.18.6)(@babel/preset-env@7.26.9):
+    resolution: {integrity: sha512-WlFttNnySKQMeujN09fRmrdWqh46QyJluM5jdtDNrkl/2Hx6N4XeDUGhABvConeK95OidVO7sFFf7sNebVXogA==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@babel/core': '*'
+    dependencies:
+      '@babel/core': 7.18.6
+      '@babel/plugin-proposal-async-generator-functions': 7.20.7(@babel/core@7.18.6)
+      '@babel/plugin-proposal-class-properties': 7.18.6(@babel/core@7.18.6)
+      '@babel/plugin-proposal-export-default-from': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-proposal-nullish-coalescing-operator': 7.18.6(@babel/core@7.18.6)
+      '@babel/plugin-proposal-numeric-separator': 7.18.6(@babel/core@7.18.6)
+      '@babel/plugin-proposal-object-rest-spread': 7.20.7(@babel/core@7.18.6)
+      '@babel/plugin-proposal-optional-catch-binding': 7.18.6(@babel/core@7.18.6)
+      '@babel/plugin-proposal-optional-chaining': 7.21.0(@babel/core@7.18.6)
+      '@babel/plugin-syntax-dynamic-import': 7.8.3(@babel/core@7.18.6)
+      '@babel/plugin-syntax-export-default-from': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-syntax-flow': 7.26.0(@babel/core@7.18.6)
+      '@babel/plugin-syntax-nullish-coalescing-operator': 7.8.3(@babel/core@7.18.6)
+      '@babel/plugin-syntax-optional-chaining': 7.8.3(@babel/core@7.18.6)
+      '@babel/plugin-transform-arrow-functions': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-async-to-generator': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-block-scoping': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-classes': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-computed-properties': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-destructuring': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-flow-strip-types': 7.26.5(@babel/core@7.18.6)
+      '@babel/plugin-transform-function-name': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-literals': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-modules-commonjs': 7.26.3(@babel/core@7.18.6)
+      '@babel/plugin-transform-named-capturing-groups-regex': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-parameters': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-private-methods': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-private-property-in-object': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-react-display-name': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-react-jsx': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-react-jsx-self': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-react-jsx-source': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-runtime': 7.26.10(@babel/core@7.18.6)
+      '@babel/plugin-transform-shorthand-properties': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-spread': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-sticky-regex': 7.25.9(@babel/core@7.18.6)
+      '@babel/plugin-transform-typescript': 7.26.8(@babel/core@7.18.6)
+      '@babel/plugin-transform-unicode-regex': 7.25.9(@babel/core@7.18.6)
+      '@babel/template': 7.26.9
+      '@react-native/babel-plugin-codegen': 0.73.4(@babel/preset-env@7.26.9)
+      babel-plugin-transform-flow-enums: 0.0.2(@babel/core@7.18.6)
+      react-refresh: 0.14.2
+    transitivePeerDependencies:
+      - '@babel/preset-env'
+      - supports-color
+    dev: false
+
   /@react-native/babel-preset@0.73.21(@babel/core@7.26.10)(@babel/preset-env@7.26.9):
     resolution: {integrity: sha512-WlFttNnySKQMeujN09fRmrdWqh46QyJluM5jdtDNrkl/2Hx6N4XeDUGhABvConeK95OidVO7sFFf7sNebVXogA==}
     engines: {node: '>=18'}
@@ -6480,6 +6533,30 @@ packages:
       - supports-color
       - utf-8-validate
 
+  /@react-native/community-cli-plugin@0.73.16(@babel/core@7.18.6)(@babel/preset-env@7.26.9):
+    resolution: {integrity: sha512-eNH3v3qJJF6f0n/Dck90qfC9gVOR4coAXMTdYECO33GfgjTi+73vf/SBqlXw9HICH/RNZYGPM3wca4FRF7TYeQ==}
+    engines: {node: '>=18'}
+    dependencies:
+      '@react-native-community/cli-server-api': 12.3.2
+      '@react-native-community/cli-tools': 12.3.2
+      '@react-native/dev-middleware': 0.73.7
+      '@react-native/metro-babel-transformer': 0.73.15(@babel/core@7.18.6)(@babel/preset-env@7.26.9)
+      chalk: 4.1.2
+      execa: 5.1.1
+      metro: 0.80.12
+      metro-config: 0.80.12
+      metro-core: 0.80.12
+      node-fetch: 2.7.0
+      readline: 1.3.0
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@babel/preset-env'
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+    dev: false
+
   /@react-native/community-cli-plugin@0.73.16(@babel/core@7.26.10)(@babel/preset-env@7.26.9):
     resolution: {integrity: sha512-eNH3v3qJJF6f0n/Dck90qfC9gVOR4coAXMTdYECO33GfgjTi+73vf/SBqlXw9HICH/RNZYGPM3wca4FRF7TYeQ==}
     engines: {node: '>=18'}
@@ -6569,6 +6646,21 @@ packages:
     transitivePeerDependencies:
       - '@babel/preset-env'
       - supports-color
+
+  /@react-native/metro-babel-transformer@0.73.15(@babel/core@7.18.6)(@babel/preset-env@7.26.9):
+    resolution: {integrity: sha512-LlkSGaXCz+xdxc9819plmpsl4P4gZndoFtpjN3GMBIu6f7TBV0GVbyJAU4GE8fuAWPVSVL5ArOcdkWKSbI1klw==}
+    engines: {node: '>=18'}
+    peerDependencies:
+      '@babel/core': '*'
+    dependencies:
+      '@babel/core': 7.18.6
+      '@react-native/babel-preset': 0.73.21(@babel/core@7.18.6)(@babel/preset-env@7.26.9)
+      hermes-parser: 0.15.0
+      nullthrows: 1.1.1
+    transitivePeerDependencies:
+      - '@babel/preset-env'
+      - supports-color
+    dev: false
 
   /@react-native/metro-babel-transformer@0.73.15(@babel/core@7.26.10)(@babel/preset-env@7.26.9):
     resolution: {integrity: sha512-LlkSGaXCz+xdxc9819plmpsl4P4gZndoFtpjN3GMBIu6f7TBV0GVbyJAU4GE8fuAWPVSVL5ArOcdkWKSbI1klw==}
@@ -15244,7 +15336,7 @@ packages:
     resolution: {integrity: sha512-an2S5quJMiy5bnZKEf6AkfH/7r8CzHvhchU40gxN+OM6HPhe7Z9T1FUychcf2M9PpPOO0Hf7BAEfJkw2TDIBDw==}
     engines: {node: '>=12.0.0'}
     dependencies:
-      readable-stream: 3.6.2
+      readable-stream: 4.7.0
       webextension-polyfill: 0.12.0
     dev: false
 
@@ -19239,7 +19331,7 @@ packages:
     resolution: {integrity: sha512-9iN1ka/9zmX1ZvLV9ewJYEk9h7RyRRtqdK0woXcqohu8EWIerfPUjYJPg0ULy0UqP7cslmdGc8xKDJcojlKiaw==}
     dev: true
 
-  /next@14.0.0(@babel/core@7.26.10)(react-dom@18.2.0)(react@18.2.0):
+  /next@14.0.0(@babel/core@7.18.6)(react-dom@18.2.0)(react@18.2.0):
     resolution: {integrity: sha512-J0jHKBJpB9zd4+c153sair0sz44mbaCHxggs8ryVXSFBuBqJ8XdE9/ozoV85xGh2VnSjahwntBZZgsihL9QznA==}
     engines: {node: '>=18.17.0'}
     hasBin: true
@@ -19261,7 +19353,7 @@ packages:
       postcss: 8.4.31
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      styled-jsx: 5.1.1(@babel/core@7.26.10)(react@18.2.0)
+      styled-jsx: 5.1.1(@babel/core@7.18.6)(react@18.2.0)
       watchpack: 2.4.0
     optionalDependencies:
       '@next/swc-darwin-arm64': 14.0.0
@@ -20816,7 +20908,7 @@ packages:
       i18next: 22.5.1
       react: 18.2.0
       react-dom: 18.2.0(react@18.2.0)
-      react-native: 0.73.4(@babel/core@7.26.10)(@babel/preset-env@7.26.9)(react@18.2.0)
+      react-native: 0.73.4(@babel/core@7.18.6)(@babel/preset-env@7.26.9)(react@18.2.0)
     dev: false
 
   /react-inspector@5.1.1(react@18.2.0):
@@ -20894,7 +20986,7 @@ packages:
       escape-string-regexp: 2.0.0
       invariant: 2.2.4
       react: 18.2.0
-      react-native: 0.73.4(@babel/core@7.26.10)(@babel/preset-env@7.26.9)(react@18.2.0)
+      react-native: 0.73.4(@babel/core@7.18.6)(@babel/preset-env@7.26.9)(react@18.2.0)
     dev: false
 
   /react-native@0.73.4(@babel/core@7.18.6)(@babel/preset-env@7.18.6)(react@18.2.0):
@@ -20950,6 +21042,61 @@ packages:
       - encoding
       - supports-color
       - utf-8-validate
+
+  /react-native@0.73.4(@babel/core@7.18.6)(@babel/preset-env@7.26.9)(react@18.2.0):
+    resolution: {integrity: sha512-VtS+Yr6OOTIuJGDECIYWzNU8QpJjASQYvMtfa/Hvm/2/h5GdB6W9H9TOmh13x07Lj4AOhNMx3XSsz6TdrO4jIg==}
+    engines: {node: '>=18'}
+    hasBin: true
+    peerDependencies:
+      react: 18.2.0
+    dependencies:
+      '@jest/create-cache-key-function': 29.7.0
+      '@react-native-community/cli': 12.3.2
+      '@react-native-community/cli-platform-android': 12.3.2
+      '@react-native-community/cli-platform-ios': 12.3.2
+      '@react-native/assets-registry': 0.73.1
+      '@react-native/codegen': 0.73.3(@babel/preset-env@7.26.9)
+      '@react-native/community-cli-plugin': 0.73.16(@babel/core@7.18.6)(@babel/preset-env@7.26.9)
+      '@react-native/gradle-plugin': 0.73.4
+      '@react-native/js-polyfills': 0.73.1
+      '@react-native/normalize-colors': 0.73.2
+      '@react-native/virtualized-lists': 0.73.4(react-native@0.73.4)
+      abort-controller: 3.0.0
+      anser: 1.4.10
+      ansi-regex: 5.0.1
+      base64-js: 1.5.1
+      chalk: 4.1.2
+      deprecated-react-native-prop-types: 5.0.0
+      event-target-shim: 5.0.1
+      flow-enums-runtime: 0.0.6
+      invariant: 2.2.4
+      jest-environment-node: 29.7.0
+      jsc-android: 250231.0.0
+      memoize-one: 5.2.1
+      metro-runtime: 0.80.12
+      metro-source-map: 0.80.12
+      mkdirp: 0.5.6
+      nullthrows: 1.1.1
+      pretty-format: 26.6.2
+      promise: 8.3.0
+      react: 18.2.0
+      react-devtools-core: 4.28.5
+      react-refresh: 0.14.2
+      react-shallow-renderer: 16.15.0(react@18.2.0)
+      regenerator-runtime: 0.13.11
+      scheduler: 0.24.0-canary-efb381bbf-20230505
+      stacktrace-parser: 0.1.11
+      whatwg-fetch: 3.6.20
+      ws: 6.2.3
+      yargs: 17.7.2
+    transitivePeerDependencies:
+      - '@babel/core'
+      - '@babel/preset-env'
+      - bufferutil
+      - encoding
+      - supports-color
+      - utf-8-validate
+    dev: false
 
   /react-native@0.73.4(@babel/core@7.26.10)(@babel/preset-env@7.26.9)(react@18.2.0):
     resolution: {integrity: sha512-VtS+Yr6OOTIuJGDECIYWzNU8QpJjASQYvMtfa/Hvm/2/h5GdB6W9H9TOmh13x07Lj4AOhNMx3XSsz6TdrO4jIg==}
@@ -22632,7 +22779,7 @@ packages:
       inline-style-parser: 0.1.1
     dev: true
 
-  /styled-jsx@5.1.1(@babel/core@7.26.10)(react@18.2.0):
+  /styled-jsx@5.1.1(@babel/core@7.18.6)(react@18.2.0):
     resolution: {integrity: sha512-pW7uC1l4mBZ8ugbiZrcIsiIvVx1UmTfw7UkC3Um2tmfUq9Bhk8IiyEIPl6F8agHgjzku6j0xQEZbfA5uSgSaCw==}
     engines: {node: '>= 12.0.0'}
     peerDependencies:
@@ -22645,7 +22792,7 @@ packages:
       babel-plugin-macros:
         optional: true
     dependencies:
-      '@babel/core': 7.26.10
+      '@babel/core': 7.18.6
       client-only: 0.0.1
       react: 18.2.0
     dev: false
@@ -24805,47 +24952,3 @@ packages:
   /zwitch@1.0.5:
     resolution: {integrity: sha512-V50KMwwzqJV0NpZIZFwfOD5/lyny3WlSzRiXgA0G7VUnRlqttta1L6UQIHzd6EuBY/cHGfwTIck7w1yH6Q5zUw==}
     dev: true
-
-  file:(@coral-xyz/anchor@0.29.0)(@metaplex-foundation/umi@1.1.1)(@solana/spl-token@0.3.9)(@solana/wallet-adapter-react@0.15.35)(@solana/web3.js@1.98.0)(@tanstack/react-query@5.67.3)(@wallet-standard/react@0.1.4)(ethers@5.8.0)(lodash@4.17.21)(react-dom@18.2.0)(react@18.2.0)(wagmi@2.5.20):
-    resolution: {directory: '', type: directory}
-    id: 'file:'
-    name: whales-sdk
-    version: 0.1.3
-    peerDependencies:
-      '@coral-xyz/anchor': ^0.29.0
-      '@solana/spl-token': ^0.3.9
-      '@solana/wallet-adapter-react': ^0.15.35
-      '@solana/web3.js': ^1.68.0
-      '@tanstack/react-query': ^5.67.3
-      '@wallet-standard/react': ^0.1.4
-      ethers: ^5.8.0
-      lodash: ^4.17.21
-      react: '>=16.8.0'
-      react-dom: '>=16.8.0'
-      wagmi: ^2.5.20
-    dependencies:
-      '@coral-xyz/anchor': 0.29.0
-      '@ethersproject/abi': 5.8.0
-      '@ethersproject/providers': 5.8.0
-      '@metaplex-foundation/mpl-token-metadata': 3.4.0(@metaplex-foundation/umi@1.1.1)
-      '@noble/curves': 1.8.1
-      '@solana/spl-token': 0.3.9(@solana/web3.js@1.98.0)
-      '@solana/wallet-adapter-react': 0.15.35(@solana/web3.js@1.98.0)(bs58@5.0.0)(react-native@0.73.4)(react@18.2.0)
-      '@solana/web3.js': 1.98.0
-      '@tanstack/react-query': 5.67.3(react@18.2.0)
-      '@wallet-standard/react': 0.1.4(react-dom@18.2.0)(react@18.2.0)
-      axios: 1.6.7
-      bn.js: 5.2.1
-      dotenv: 16.4.7
-      ethers: 5.8.0
-      lodash: 4.17.21
-      react: 18.2.0
-      react-dom: 18.2.0(react@18.2.0)
-      tslib: 2.8.1
-      wagmi: 2.5.20(@tanstack/react-query@5.67.3)(@types/react@18.2.45)(react-dom@18.2.0)(react-native@0.73.4)(react@18.2.0)(rollup@2.76.0)(typescript@5.2.2)(viem@2.23.10)
-    transitivePeerDependencies:
-      - '@metaplex-foundation/umi'
-      - bufferutil
-      - debug
-      - utf-8-validate
-    dev: false
