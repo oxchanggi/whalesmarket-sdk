@@ -1,4 +1,3 @@
-import { PreMarketSolanaMobile } from "@whalesmarket/mobile-sdk";
 import { PreMarketSolana } from "@whalesmarket/sdk";
 import { Connection } from "@solana/web3.js";
 import { Keypair } from "@solana/web3.js";
@@ -16,7 +15,7 @@ if (!connection || !programId || !apiBaseUrl || !configAccountPubKey) {
   throw new Error("Missing environment variables");
 }
 
-const preMarket = new PreMarketSolanaMobile(connection, programId, apiBaseUrl);
+const preMarket = new PreMarketSolana(connection, programId);
 
 (async () => {
   // Initialize the PreMarket

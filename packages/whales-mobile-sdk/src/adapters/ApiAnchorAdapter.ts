@@ -201,7 +201,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   async createOffer(
     tokenId: number,
     type: string,
-    tokenPublicKey: PublicKey,
+    exToken: PublicKey,
     amount: number,
     value: number,
     fullMatch: boolean,
@@ -213,7 +213,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
         {
           tokenId,
           type,
-          tokenPublicKey: tokenPublicKey.toString(),
+          exToken,
           amount,
           value,
           fullMatch,

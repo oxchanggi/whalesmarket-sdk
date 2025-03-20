@@ -1,6 +1,6 @@
 import { PreMarketSolanaMobile } from "@whalesmarket/mobile-sdk";
 import { PreMarketSolana } from "@whalesmarket/sdk";
-import { Connection } from "@solana/web3.js";
+import { Connection, LAMPORTS_PER_SOL } from "@solana/web3.js";
 import { Keypair } from "@solana/web3.js";
 import bs58 from "bs58";
 import "dotenv/config";
@@ -28,6 +28,11 @@ const preMarket = new PreMarketSolanaMobile(connection, programId, apiBaseUrl);
   const keypair = Keypair.fromSecretKey(bs58.decode(signerSecretKey));
   preMarket.setPubkey(keypair.publicKey.toString());
   console.log("Signer public key:", keypair.publicKey.toString());
+
+  console.log(
+    "Balance: ",
+    (await connection.getBalance(keypair.publicKey)) / LAMPORTS_PER_SOL
+  );
 
   // Create an offer
   const offerTx = await preMarket.createOffer({

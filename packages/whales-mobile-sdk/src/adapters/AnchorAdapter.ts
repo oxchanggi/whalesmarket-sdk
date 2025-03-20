@@ -60,7 +60,7 @@ export interface AnchorAdapter {
   createOffer(
     tokenId: number,
     type: string,
-    tokenPublicKey: PublicKey,
+    exToken: PublicKey,
     amount: number,
     value: number,
     fullMatch: boolean,

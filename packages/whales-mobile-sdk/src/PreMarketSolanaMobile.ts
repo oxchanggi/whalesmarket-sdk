@@ -359,23 +359,8 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
       throw new Error("No signer set or signer has no public key");
     }
 
-    // Adjust amount by multiplying with 10^6
-    amount = amount * Math.pow(10, 6);
-
     // Get token decimals and adjust value
     const tokenPublicKey = new PublicKey(exToken || NATIVE_MINT.toString());
-    try {
-      // Get token mint info to retrieve decimals
-      const mintInfo = await getMint(this.connection, tokenPublicKey);
-
-      // Adjust value based on token decimals
-      // Multiply by 10^decimals
-      value = value * Math.pow(10, mintInfo.decimals);
-    } catch (error) {
-      console.error(`Error getting decimals for token ${exToken}:`, error);
-      // Default to 9 decimals (common in Solana) if there's an error
-      value = value * Math.pow(10, 9);
-    }
 
     return this.preMarket.createOffer(
       parseInt(tokenId),
@@ -430,24 +415,8 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
       throw new Error("No signer set or signer has no public key");
     }
 
-    // Adjust amount by multiplying with 10^6
-    const adjustedAmount = totalAmount * Math.pow(10, 6);
-
-    // Get token decimals and adjust value
-    const tokenPublicKey = new PublicKey(exToken || NATIVE_MINT.toString());
-    let adjustedValue = totalValue;
-    try {
-      // Get token mint info to retrieve decimals
-      const mintInfo = await getMint(this.connection, tokenPublicKey);
-
-      // Adjust value based on token decimals
-      // Multiply by 10^decimals
-      adjustedValue = totalValue * Math.pow(10, mintInfo.decimals);
-    } catch (error) {
-      console.error(`Error getting decimals for token ${exToken}:`, error);
-      // Default to 9 decimals (common in Solana) if there's an error
-      adjustedValue = totalValue * Math.pow(10, 9);
-    }
+    const adjustedAmount = totalAmount;
+    const adjustedValue = totalValue;
 
     try {
       // Use the preMarketWrapper to match offers
