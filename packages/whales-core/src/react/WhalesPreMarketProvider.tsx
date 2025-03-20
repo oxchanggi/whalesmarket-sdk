@@ -4,7 +4,11 @@ import React, { Component } from "react";
 import { Connection, Transaction } from "@solana/web3.js";
 import { ethers } from "ethers";
 import { MultiPreMarketManager } from "../managers/MultiPreMarketManager";
-import { BasePreMarket, CreateOfferParams } from "../base/BasePreMarket";
+import {
+  BasePreMarket,
+  CreateOfferParams,
+  MatchOfferParams,
+} from "../base/BasePreMarket";
 import WhalesPreMarketContext from "./WhalesPreMarketContext";
 import {
   WhalesPreMarketProviderProps,
@@ -121,6 +125,8 @@ export abstract class WhalesPreMarketProvider<
       getMarket: (id: string) => this.manager.getMarket(id),
       createOffer: (marketId: string, params: CreateOfferParams) =>
         this.manager.createOffer(marketId, params),
+      matchOffer: (marketId: string, params: MatchOfferParams) =>
+        this.manager.matchOffer(marketId, params),
       fillOffer: (marketId: string, offerId: number, amount: number) =>
         this.manager.fillOffer(marketId, offerId, amount),
       cancelOffer: (marketId: string, offerId: number) =>
@@ -184,11 +190,13 @@ export abstract class WhalesPreMarketProvider<
     };
   }
 
-  render() {
-    return (
-      <WhalesPreMarketContext.Provider value={this.getContextValue()}>
-        {this.props.children}
-      </WhalesPreMarketContext.Provider>
+  render(): JSX.Element {
+    // Create a simple element that just passes through props.children
+    // This is to avoid React Context Provider type issues
+    return React.createElement(
+      WhalesPreMarketContext.Provider,
+      { value: this.getContextValue() },
+      this.props.children
     );
   }
 }

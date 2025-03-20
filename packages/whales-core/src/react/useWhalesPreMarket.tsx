@@ -1,4 +1,4 @@
-import React, { useContext } from "react";
+import { useContext } from "react";
 import WhalesPreMarketContext from "./WhalesPreMarketContext";
 import { UseWhalesPreMarketReturn } from "./types";
 

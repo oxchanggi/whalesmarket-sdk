@@ -1,10 +1,10 @@
 "use client";
 
-import React, { createContext } from "react";
+import React, { createContext, useContext } from "react";
 import { WhalesPreMarketContextValue } from "./types";
 
 // Create context with default values
-const WhalesPreMarketContext = createContext<WhalesPreMarketContextValue>({
+export const WhalesPreMarketContext = createContext<WhalesPreMarketContextValue>({
   markets: [],
   tokens: [],
   isInitialized: false,
@@ -14,6 +14,8 @@ const WhalesPreMarketContext = createContext<WhalesPreMarketContextValue>({
     throw new Error("WhalesPreMarketProvider not initialized");
   },
   createOffer: () =>
+    Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
+  matchOffer: () =>
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),
   fillOffer: () =>
     Promise.reject(new Error("WhalesPreMarketProvider not initialized")),

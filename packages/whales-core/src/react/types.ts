@@ -5,6 +5,7 @@ import React from "react";
 import {
   BasePreMarket,
   CreateOfferParams,
+  MatchOfferParams,
   OfferData,
   OrderData,
   MarketConfig as BaseMarketConfig,
@@ -43,6 +44,10 @@ export interface WhalesPreMarketContextValue {
   createOffer: (
     marketId: string,
     params: CreateOfferParams
+  ) => Promise<ethers.PopulatedTransaction | Transaction>;
+  matchOffer: (
+    marketId: string,
+    params: MatchOfferParams
   ) => Promise<ethers.PopulatedTransaction | Transaction>;
   fillOffer: (
     marketId: string,
