@@ -39,11 +39,18 @@ const preMarket = new PreMarketSolanaMobile(connection, programId, apiBaseUrl);
     offerType: 0, // 0 for buy, 1 for sell
     tokenId: "9326",
     amount: 1,
-    value: 1,
+    value: 0.0001,
     exToken: "So11111111111111111111111111111111111111112", // SOL
     fullMatch: false,
   });
 
   // Sign and send the transaction
   console.log("Transaction hash:", offerTx);
+
+  offerTx.sign(keypair);
+
+  const txHash = await connection.sendRawTransaction(offerTx.serialize());
+  console.log("Transaction hash:", txHash);
+  const tx = await connection.confirmTransaction(txHash);
+  console.log("Transaction:", tx);
 })();
