@@ -34,23 +34,30 @@ const preMarket = new PreMarketSolanaMobile(connection, programId, apiBaseUrl);
     (await connection.getBalance(keypair.publicKey)) / LAMPORTS_PER_SOL
   );
 
-  // Create an offer
-  const offerTx = await preMarket.createOffer({
-    offerType: 0, // 0 for buy, 1 for sell
-    tokenId: "9326",
-    amount: 1,
-    value: 0.0001,
-    exToken: "So11111111111111111111111111111111111111112", // SOL
-    fullMatch: false,
-  });
+  preMarket.setPubkey(keypair.publicKey.toString());
 
-  // Sign and send the transaction
-  console.log("Transaction hash:", offerTx);
+  try {
+    // Create an offer
+    const offerTx = await preMarket.matchOffer({
+      offerIds: [110],
+      offerType: 0, // 0 for buy, 1 for sell
+      tokenId: "9326",
+      totalAmount: 1,
+      totalValue: 0.001,
+      exToken: "So11111111111111111111111111111111111111112", // SOL
+      newOfferFullMatch: true,
+    });
 
-  offerTx.sign(keypair);
+    // Sign and send the transaction
+    console.log("Transaction hash:", offerTx);
 
-  const txHash = await connection.sendRawTransaction(offerTx.serialize());
-  console.log("Transaction hash:", txHash);
-  const tx = await connection.confirmTransaction(txHash);
-  console.log("Transaction:", tx);
+    offerTx.sign(keypair);
+
+    // const txHash = await connection.sendRawTransaction(offerTx.serialize());
+    // console.log("Transaction hash:", txHash);
+    // const tx = await connection.confirmTransaction(txHash);
+    // console.log("Transaction:", tx);
+  } catch (error: any) {
+    console.log(JSON.stringify(error), "abc");
+  }
 })();

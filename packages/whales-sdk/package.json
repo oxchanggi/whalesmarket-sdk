@@ -1,6 +1,6 @@
 {
   "name": "@whalesmarket/sdk",
-  "version": "0.1.19",
+  "version": "0.1.20",
   "description": "Whales SDK with Anchor support",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -41,7 +41,7 @@
   },
   "publishConfig": {
     "dependencies": {
-      "@whalesmarket/core": "^0.1.18"
+      "@whalesmarket/core": "^0.1.19"
     }
   }
 }

@@ -242,16 +242,24 @@ export class ApiAnchorAdapter implements AnchorAdapter {
     try {
       const response = await axios.post(
         `${this.apiBaseUrl}/offers/match`,
-        params,
-        { headers: this.getPostHeaders() }
+        {
+          offerIds: params.offerIds,
+          tokenId: params.tokenId,
+          totalAmount: params.totalAmount,
+          totalValue: params.totalValue,
+          offerType: params.offerType,
+          exToken: params.exToken,
+          newOfferFullMatch: params.newOfferFullMatch,
+        },
+        { headers: this.getPostHeaders(params.signer!.toString()) }
       );
 
       // Convert the serialized transaction back to a Transaction object
       const serializedTx = response.data.transaction;
       const transaction = Transaction.from(Buffer.from(serializedTx, "base64"));
       return transaction;
-    } catch (error) {
-      console.error("Error matching offers:", error);
+    } catch (error: any) {
+      console.error("Error matching offers:", error?.response?.data);
       throw new Error(`Failed to match offers: ${error}`);
     }
   }

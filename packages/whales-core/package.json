@@ -1,6 +1,6 @@
 {
   "name": "@whalesmarket/core",
-  "version": "0.1.18",
+  "version": "0.1.20",
   "description": "Core functionality for Whales SDK",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
