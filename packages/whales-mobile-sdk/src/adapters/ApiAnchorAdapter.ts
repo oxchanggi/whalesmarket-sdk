@@ -1,6 +1,7 @@
 import { PublicKey, Transaction } from "@solana/web3.js";
 import { AnchorAdapter } from "./AnchorAdapter";
 import axios from "axios";
+import { MatchOfferParams } from "@whalesmarket/core";
 
 /**
  * Implementation of AnchorAdapter using API calls
@@ -231,6 +232,27 @@ export class ApiAnchorAdapter implements AnchorAdapter {
     } catch (error) {
       console.error("Error creating offer:", error);
       throw new Error(`Failed to create offer: ${error}`);
+    }
+  }
+
+  /**
+   * Match multiple offers and create a new offer with the remaining amount
+   */
+  async matchOffer(params: MatchOfferParams): Promise<Transaction> {
+    try {
+      const response = await axios.post(
+        `${this.apiBaseUrl}/offers/match`,
+        params,
+        { headers: this.getPostHeaders() }
+      );
+
+      // Convert the serialized transaction back to a Transaction object
+      const serializedTx = response.data.transaction;
+      const transaction = Transaction.from(Buffer.from(serializedTx, "base64"));
+      return transaction;
+    } catch (error) {
+      console.error("Error matching offers:", error);
+      throw new Error(`Failed to match offers: ${error}`);
     }
   }
 

@@ -1,4 +1,5 @@
 import { PublicKey } from "@solana/web3.js";
+import { MatchOfferParams } from "@whalesmarket/core";
 
 /**
  * Interface for Anchor functionality that needs to be replaced in mobile
@@ -105,4 +106,11 @@ export interface AnchorAdapter {
    * Cancel an order
    */
   cancelOrder(orderId: number, userPublicKey: PublicKey): Promise<any>;
+
+  /**
+   * Match multiple offers and create a new offer with the remaining amount
+   * @param params Parameters for matching offers
+   * @returns Transaction data
+   */
+  matchOffer(params: MatchOfferParams): Promise<any>;
 }

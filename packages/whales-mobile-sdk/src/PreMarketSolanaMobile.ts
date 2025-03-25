@@ -93,6 +93,15 @@ class PreMarketOriginalMobile {
     );
   }
 
+  /**
+   * Match multiple offers and create a new offer with the remaining amount
+   * @param params Parameters for matching offers
+   * @returns Transaction data
+   */
+  async matchOffer(params: MatchOfferParams): Promise<Transaction> {
+    return this.adapter.matchOffer(params);
+  }
+
   async fillOffer(
     offerId: number,
     amount: number,
@@ -149,38 +158,6 @@ class PreMarketWrapperMobile {
   constructor(preMarket: PreMarketOriginalMobile, adapter: AnchorAdapter) {
     this.preMarket = preMarket;
     this.adapter = adapter;
-  }
-
-  async matchOffer(
-    user: PublicKey,
-    offerIds: number[],
-    totalAmount: number,
-    matchPrice: number,
-    offerType: string,
-    newOfferFullMatch: boolean
-  ): Promise<Transaction> {
-    try {
-      // In a real implementation, this would call the API to match offers
-      // For now, we'll create a dummy transaction
-      const transaction = new Transaction();
-
-      // Add a memo to the transaction to identify it
-      // In a real implementation, this would be replaced with actual instructions
-      // transaction.add(new TransactionInstruction({
-      //   keys: [],
-      //   programId: new PublicKey("MemoSq4gqABAXKb96qnH8TysNcWxMyWCqXgDLGmfcHr"),
-      //   data: Buffer.from(`Match offers: ${offerIds.join(',')}`, 'utf-8'),
-      // }));
-
-      return transaction;
-    } catch (error) {
-      console.error("Error in matchOffer:", error);
-      throw new Error(
-        `Failed to match offers: ${
-          error instanceof Error ? error.message : String(error)
-        }`
-      );
-    }
   }
 }
 
@@ -402,9 +379,6 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
       throw new Error("Total value must be greater than zero");
     }
 
-    // Convert to Solana-specific implementation
-    const type = offerType === 0 ? "buy" : "sell";
-
     if (!this.preMarket) {
       throw new Error("PreMarket instance not initialized");
     }
@@ -420,14 +394,16 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
 
     try {
       // Use the preMarketWrapper to match offers
-      return await this.preMarketWrapper.matchOffer(
-        signerPublicKey,
+      return await this.preMarket.matchOffer({
         offerIds,
-        adjustedAmount,
-        adjustedValue,
-        type,
-        newOfferFullMatch
-      );
+        tokenId,
+        totalAmount: adjustedAmount,
+        totalValue: adjustedValue,
+        offerType: offerType,
+        exToken,
+        newOfferFullMatch,
+        signer: signerPublicKey.toString(),
+      });
     } catch (error) {
       console.error("Error in matchOffer:", error);
       throw new Error(
