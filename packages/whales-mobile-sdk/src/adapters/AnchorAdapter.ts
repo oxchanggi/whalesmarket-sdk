@@ -6,6 +6,11 @@ import { MatchOfferParams } from "@whalesmarket/core";
  */
 export interface AnchorAdapter {
   /**
+   * Set the pubkey
+   */
+  setPubkey(pubkey: string): void;
+
+  /**
    * Initialize the adapter
    */
   initialize(configAccount: string): void;

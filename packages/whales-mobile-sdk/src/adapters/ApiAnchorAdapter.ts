@@ -11,6 +11,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   private rpc: string;
   private programId: string;
   private configAccount: string | null = null;
+  private pubkey: string | null = null;
 
   constructor(apiBaseUrl: string, rpc: string, programId: string) {
     this.apiBaseUrl = apiBaseUrl;
@@ -20,6 +21,10 @@ export class ApiAnchorAdapter implements AnchorAdapter {
 
   initialize(configAccount: string) {
     this.configAccount = configAccount;
+  }
+
+  setPubkey(pubkey: string) {
+    this.pubkey = pubkey;
   }
 
   /**
@@ -39,7 +44,11 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   /**
    * Get headers for POST requests that need a signer
    */
-  private getPostHeaders(signer?: string) {
+  private getPostHeaders() {
+    const signer = this.pubkey;
+    if (!signer) {
+      throw new Error("Signer not initialized");
+    }
     const headers = this.getCommonHeaders();
     if (signer) {
       return {
@@ -221,7 +230,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
           signerPublicKey: signerPublicKey.toString(),
         },
         {
-          headers: this.getPostHeaders(signerPublicKey.toString()),
+          headers: this.getPostHeaders(),
         }
       );
 
@@ -251,7 +260,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
           exToken: params.exToken,
           newOfferFullMatch: params.newOfferFullMatch,
         },
-        { headers: this.getPostHeaders(params.signer!.toString()) }
+        { headers: this.getPostHeaders() }
       );
 
       // Convert the serialized transaction back to a Transaction object
@@ -280,7 +289,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
           userPublicKey: userPublicKey.toString(),
         },
         {
-          headers: this.getPostHeaders(userPublicKey.toString()),
+          headers: this.getPostHeaders(),
         }
       );
 
@@ -396,7 +405,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
               : sellerFeeDiscount,
         },
         {
-          headers: this.getPostHeaders(settleVerifier.toString()),
+          headers: this.getPostHeaders(),
         }
       );
 
@@ -424,7 +433,7 @@ export class ApiAnchorAdapter implements AnchorAdapter {
           userPublicKey: userPublicKey.toString(),
         },
         {
-          headers: this.getPostHeaders(userPublicKey.toString()),
+          headers: this.getPostHeaders(),
         }
       );
 

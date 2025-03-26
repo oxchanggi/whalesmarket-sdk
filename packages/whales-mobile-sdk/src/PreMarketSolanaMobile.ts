@@ -201,6 +201,11 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
     );
   }
 
+  setPubkey(pubkey: string) {
+    this._pubkey = pubkey;
+    this.adapter.setPubkey(pubkey);
+  }
+
   /**
    * Get the status of a transaction
    * @param txHash The transaction hash
@@ -402,7 +407,6 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
         offerType: offerType,
         exToken,
         newOfferFullMatch,
-        signer: signerPublicKey.toString(),
       });
     } catch (error) {
       console.error("Error in matchOffer:", error);

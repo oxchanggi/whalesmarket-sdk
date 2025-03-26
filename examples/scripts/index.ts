@@ -53,10 +53,10 @@ const preMarket = new PreMarketSolanaMobile(connection, programId, apiBaseUrl);
 
     offerTx.sign(keypair);
 
-    // const txHash = await connection.sendRawTransaction(offerTx.serialize());
-    // console.log("Transaction hash:", txHash);
-    // const tx = await connection.confirmTransaction(txHash);
-    // console.log("Transaction:", tx);
+    const txHash = await connection.sendRawTransaction(offerTx.serialize());
+    console.log("Transaction hash:", txHash);
+    const tx = await connection.confirmTransaction(txHash);
+    console.log("Transaction:", tx);
   } catch (error: any) {
     console.log(JSON.stringify(error), "abc");
   }
