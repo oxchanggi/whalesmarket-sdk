@@ -225,11 +225,6 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
       signer,
     } = params;
 
-    // Validate input parameters
-    if (!offerIds || offerIds.length === 0) {
-      throw new Error("At least one offer ID must be provided");
-    }
-
     if (totalAmount <= 0) {
       throw new Error("Total amount must be greater than zero");
     }

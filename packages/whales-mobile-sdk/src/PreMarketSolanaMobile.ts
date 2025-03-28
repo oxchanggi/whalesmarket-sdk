@@ -275,18 +275,7 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
    */
   async getOffer(offerId: number): Promise<OfferData> {
     const offerAccount = await this.preMarket.fetchOfferAccount(offerId);
-    return {
-      offerType: offerAccount.offerType.toString() === "Buy" ? 0 : 1,
-      tokenId: offerAccount.tokenConfig.toString(),
-      exToken: offerAccount.exToken.toString(),
-      amount: Number(offerAccount.totalAmount),
-      value: Number(offerAccount.price),
-      collateral: Number(offerAccount.collateral),
-      filledAmount: Number(offerAccount.filledAmount),
-      status: offerAccount.status.toString() === "Open" ? 0 : 1,
-      offeredBy: offerAccount.authority.toString(),
-      fullMatch: offerAccount.isFullMatch,
-    };
+    return offerAccount;
   }
 
   /**
@@ -296,22 +285,7 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
    */
   async getOrder(orderId: number): Promise<OrderData> {
     const orderAccount = await this.preMarket.fetchOrderAccount(orderId);
-    const offerAccount = await this.preMarket.fetchOfferAccount(
-      Number(orderAccount.offer)
-    );
-
-    return {
-      offerId: Number(offerAccount.id),
-      amount: Number(orderAccount.amount),
-      seller: orderAccount.seller.toString(),
-      buyer: orderAccount.buyer.toString(),
-      status:
-        orderAccount.status.toString() === "Open"
-          ? 0
-          : orderAccount.status.toString() === "Closed"
-          ? 1
-          : 2,
-    };
+    return orderAccount;
   }
 
   /**
@@ -370,11 +344,6 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
       exToken,
       newOfferFullMatch,
     } = params;
-
-    // Validate input parameters
-    if (!offerIds || offerIds.length === 0) {
-      throw new Error("At least one offer ID must be provided");
-    }
 
     if (totalAmount <= 0) {
       throw new Error("Total amount must be greater than zero");

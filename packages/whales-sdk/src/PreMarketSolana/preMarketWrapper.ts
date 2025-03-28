@@ -169,7 +169,7 @@ export class PreMarketWrapper {
       .transaction();
 
     if (exToken.toString() == NATIVE_MINT.toString()) {
-      const amountTransfer = offerAccount.price
+      const amountTransfer = new anchor.BN(matchPrice)
         .mul(new anchor.BN(totalAmount))
         .div(new anchor.BN(WEI6))
         .toNumber();

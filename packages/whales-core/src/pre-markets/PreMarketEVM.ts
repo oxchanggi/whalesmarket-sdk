@@ -11,6 +11,7 @@ import {
   MatchOfferParams,
 } from "../base/BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
+import { TokenEVM } from "../tokens/TokenEVM";
 
 /**
  * Class for interacting with the PreMarket contract
@@ -19,6 +20,7 @@ export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction
   private contract: PreMarket;
   // ETH address constant (address(0))
   private readonly ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
+  private tokens: TokenEVM;
 
   /**
    * Create a new instance of the PreMarket contract
@@ -35,6 +37,7 @@ export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction
       contractAddress,
       signerOrProvider
     );
+    this.tokens = new TokenEVM(signerOrProvider as ethers.providers.Provider);
   }
 
   /**
@@ -79,14 +82,16 @@ export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction
    */
   public async getOffer(offerId: number): Promise<OfferData> {
     const offer = await this.contract.offers(offerId);
+    const exToken = offer.exToken;
+    const exTokenDecimals = await this.tokens.getDecimals(exToken);
     return {
       offerType: offer.offerType,
       tokenId: offer.tokenId,
       exToken: offer.exToken,
-      amount: offer.amount.toNumber(),
-      value: offer.value.toNumber(),
-      collateral: offer.collateral.toNumber(),
-      filledAmount: offer.filledAmount.toNumber(),
+      amount: offer.amount.toNumber() / Math.pow(10, 6),
+      value: offer.value.toNumber() / Math.pow(10, exTokenDecimals),
+      collateral: offer.collateral.toNumber() / Math.pow(10, exTokenDecimals),
+      filledAmount: offer.filledAmount.toNumber() / Math.pow(10, 6),
       status: offer.status,
       offeredBy: offer.offeredBy,
       fullMatch: offer.fullMatch,
@@ -102,7 +107,7 @@ export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction
     const order = await this.contract.orders(orderId);
     return {
       offerId: order.offerId.toNumber(),
-      amount: order.amount.toNumber(),
+      amount: order.amount.toNumber() / Math.pow(10, 6),
       seller: order.seller,
       buyer: order.buyer,
       status: order.status,
