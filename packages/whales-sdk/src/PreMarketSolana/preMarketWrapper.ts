@@ -1,6 +1,4 @@
 // @ts-nocheck
-
-
 import {
   AccountMeta,
   ComputeBudgetProgram,
@@ -20,6 +18,7 @@ import {
   getExTokenAccountPubKey,
   getOfferAccountPubKey,
   getOrderAccountPubKey,
+  getTokenConfigAccountPubKey,
   getVaultTokenAccountPubKey,
 } from "./accounts";
 import { getAssociatedTokenAddressSync, NATIVE_MINT } from "@solana/spl-token";

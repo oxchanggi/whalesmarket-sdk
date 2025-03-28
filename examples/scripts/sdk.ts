@@ -29,13 +29,14 @@ const preMarket = new PreMarketSolana(connection, programId);
   console.log("Signer public key:", keypair.publicKey.toString());
 
   // Create an offer
-  const offerTx = await preMarket.createOffer({
+  const offerTx = await preMarket.matchOffer({
+    offerIds: [],
     offerType: 0, // 0 for buy, 1 for sell
-    tokenId: "9326",
-    amount: 1,
-    value: 1,
+    tokenId: "8832",
+    totalAmount: 500,
+    totalValue: 0.075,
     exToken: "So11111111111111111111111111111111111111112", // SOL
-    fullMatch: false,
+    newOfferFullMatch: true,
   });
 
   // Sign and send the transaction

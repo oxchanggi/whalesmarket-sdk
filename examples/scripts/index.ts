@@ -39,11 +39,11 @@ const preMarket = new PreMarketSolanaMobile(connection, programId, apiBaseUrl);
   try {
     // Create an offer
     const offerTx = await preMarket.matchOffer({
-      offerIds: [110],
+      offerIds: [],
       offerType: 0, // 0 for buy, 1 for sell
-      tokenId: "9326",
-      totalAmount: 1,
-      totalValue: 0.001,
+      tokenId: "8832",
+      totalAmount: 500,
+      totalValue: 0.075,
       exToken: "So11111111111111111111111111111111111111112", // SOL
       newOfferFullMatch: true,
     });
