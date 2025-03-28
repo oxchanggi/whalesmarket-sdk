@@ -265,6 +265,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
     // Get token decimals and adjust value
     const tokenPublicKey = new PublicKey(exToken || NATIVE_MINT.toString());
     let adjustedValue = totalValue;
+    let mintDecimals = 9;
     try {
       // Get token mint info to retrieve decimals
       const mintInfo = await getMint(this.connection, tokenPublicKey);
@@ -272,6 +273,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
       // Adjust value based on token decimals
       // Multiply by 10^decimals
       adjustedValue = totalValue * Math.pow(10, mintInfo.decimals);
+      mintDecimals = mintInfo.decimals;
     } catch (error) {
       console.error(`Error getting decimals for token ${exToken}:`, error);
       // Default to 9 decimals (common in Solana) if there's an error
@@ -287,7 +289,7 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
         signerPublicKey,
         offerIds,
         adjustedAmount,
-        adjustedValue,
+        Number((adjustedValue / totalAmount).toFixed(mintDecimals)),
         type,
         newOfferFullMatch
       );

@@ -1,5 +1,6 @@
 // @ts-nocheck
 
+
 import {
   AccountMeta,
   ComputeBudgetProgram,
@@ -23,7 +24,7 @@ import {
 } from "./accounts";
 import { getAssociatedTokenAddressSync, NATIVE_MINT } from "@solana/spl-token";
 import { WEI6 } from "./constants";
-import { buildInstructionsWrapSol } from "./utils";
+import { buildInstructionsUnWrapSol, buildInstructionsWrapSol } from "./utils";
 import { BN } from "bn.js";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
@@ -179,10 +180,15 @@ export class PreMarketWrapper {
         amountTransfer
       );
 
+      const unwrapSolInstructions = await buildInstructionsUnWrapSol(user);
+      const transactionUnwrapSol = new Transaction().add(
+        ...unwrapSolInstructions
+      );
+
       if (instructions.length > 0) {
         const transactionWrapSol = new Transaction().add(...instructions);
 
-        return transactionWrapSol.add(transaction);
+        return transactionWrapSol.add(transaction, transactionUnwrapSol);
       }
     }
     return transaction;
