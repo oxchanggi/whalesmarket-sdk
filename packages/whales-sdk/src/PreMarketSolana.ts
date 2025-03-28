@@ -282,11 +282,14 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
       // offerType: "buy" | "sell", newOfferFullMatch: boolean, newOrderIds?: number[]
       return await this.preMarketWrapper.matchOffer(
         signerPublicKey,
+        parseInt(tokenId),
+        new PublicKey(exToken || NATIVE_MINT.toString()),
         offerIds,
         adjustedAmount,
         Number((adjustedValue / totalAmount).toFixed(mintDecimals)),
         type,
-        newOfferFullMatch
+        newOfferFullMatch || false,
+        undefined
       );
     } catch (error) {
       console.error("Error in matchOffer:", error);

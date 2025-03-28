@@ -63,6 +63,8 @@ export class PreMarketWrapper {
 
   async matchOffer(
     user: PublicKey,
+    tokenId: number,
+    exToken: PublicKey,
     offerIds: number[],
     totalAmount: number,
     matchPrice: number,
@@ -112,15 +114,15 @@ export class PreMarketWrapper {
       newOfferId
     );
 
-    const offerAccount = await this.preMarketSdk.fetchOfferAccount(offerIds[0]);
+    const tokenConfigAccountPubKey = getTokenConfigAccountPubKey(
+      this.preMarketSdk.program,
+      this.preMarketSdk.configAccountPubKey,
+      tokenId
+    );
 
-    const tokenConfigAccountPubKey = offerAccount.tokenConfig;
-
-    let exToken = offerAccount.exToken;
-
-    // if (exToken.toString() == PublicKey.default.toString()) {
-    //   exToken = NATIVE_MINT;
-    // }
+    if (exToken.toString() == PublicKey.default.toString()) {
+      exToken = NATIVE_MINT;
+    }
     const vaultTokenAccountPubKey = getVaultTokenAccountPubKey(
       this.preMarketSdk.program,
       this.preMarketSdk.configAccountPubKey,
