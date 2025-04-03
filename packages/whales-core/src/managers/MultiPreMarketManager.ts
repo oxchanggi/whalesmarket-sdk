@@ -8,7 +8,7 @@ import {
   OrderData,
   MatchOfferParams,
 } from "../base/BasePreMarket";
-import { PreMarketContract } from "../pre-markets/PreMarketEVM";
+import { PreMarketEVM } from "../pre-markets/PreMarketEVM";
 
 /**
  * Interface for market identification
@@ -26,7 +26,7 @@ export abstract class MultiPreMarketManager<
   T extends BasePreMarket<Transaction, any>
 > {
   protected solanaMarkets: Map<string, T> = new Map();
-  protected evmMarkets: Map<string, PreMarketContract> = new Map();
+  protected evmMarkets: Map<string, PreMarketEVM> = new Map();
 
   /**
    * Create a new Solana PreMarket instance
@@ -96,12 +96,12 @@ export abstract class MultiPreMarketManager<
     id: string,
     contractAddress: string,
     signerOrProvider: ethers.Signer | ethers.providers.Provider
-  ): Promise<PreMarketContract> {
+  ): Promise<PreMarketEVM> {
     if (this.solanaMarkets.has(id) || this.evmMarkets.has(id)) {
       throw new Error(`Market with ID ${id} already exists`);
     }
 
-    const market = new PreMarketContract(contractAddress, signerOrProvider);
+    const market = new PreMarketEVM(contractAddress, signerOrProvider);
     await market.initialize({});
 
     this.evmMarkets.set(id, market);
@@ -145,7 +145,7 @@ export abstract class MultiPreMarketManager<
    * @param id The market ID
    * @returns The PreMarketContract instance
    */
-  public getEVMMarket(id: string): PreMarketContract {
+  public getEVMMarket(id: string): PreMarketEVM {
     const market = this.evmMarkets.get(id);
     if (!market) {
       throw new Error(`EVM market with ID ${id} not found`);

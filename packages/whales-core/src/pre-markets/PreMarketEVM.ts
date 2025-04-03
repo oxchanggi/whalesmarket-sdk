@@ -16,7 +16,7 @@ import { TokenEVM } from "../tokens/TokenEVM";
 /**
  * Class for interacting with the PreMarket contract
  */
-export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction> {
+export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   private contract: PreMarket;
   // ETH address constant (address(0))
   private readonly ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -164,10 +164,10 @@ export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction
       tokenId,
       totalAmount,
       totalValue,
-      offerType,
       exToken,
       newOfferFullMatch,
     } = params;
+    let offerType = params.offerType;
 
     // Convert numbers to BigNumber for internal processing
     const offerIdsBN = offerIds.map((id) => ethers.BigNumber.from(id));
@@ -184,6 +184,10 @@ export class PreMarketContract extends BasePreMarket<ethers.PopulatedTransaction
       );
       totalValueBN = parseTokenAmount(totalValue, tokenDecimals);
     }
+
+    // Convert offer type to match the contract
+    // offerType = 0 -> fill offer buy -> sell
+    offerType === 0 ? (offerType = 1) : (offerType = 2);
 
     let tx: ethers.PopulatedTransaction;
     // Build the transaction
