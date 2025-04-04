@@ -210,6 +210,33 @@ export default class PreMarket {
       .transaction();
   }
 
+  updateSettleDuration(
+    id: number,
+    settleDuration: number,
+    operator: PublicKey
+  ): Promise<Transaction> {
+    const tokenConfigAccountPubKey = getTokenConfigAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      id
+    );
+    const roleAccountPubKey = getRoleAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      operator
+    );
+    return this.program.methods
+      .updateSettleDuration(new BN(settleDuration))
+      .accounts({
+        tokenConfigAccount: tokenConfigAccountPubKey,
+        configAccount: this.configAccountPubKey,
+        roleAccount: roleAccountPubKey,
+        authority: this.configAccount.authority,
+        operator: operator,
+      })
+      .transaction();
+  }
+
   async updateTokenAddress(id: number, token: PublicKey): Promise<Transaction> {
     const tokenConfigAccountPubKey = getTokenConfigAccountPubKey(
       this.program,
@@ -218,6 +245,9 @@ export default class PreMarket {
     );
     const tokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(token);
+    if (!tokenInfo.value) {
+      throw new Error(`Token not found: ${token.toString()}`);
+    }
 
     return this.program.methods
       .updateTokenAddress()
@@ -251,6 +281,9 @@ export default class PreMarket {
     );
     const tokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(token);
+    if (!tokenInfo.value) {
+      throw new Error(`Token not found: ${token.toString()}`);
+    }
     return this.program.methods
       .tokenToSettlePhase(settleRate ? new BN(settleRate) : null)
       .accounts({
@@ -291,6 +324,9 @@ export default class PreMarket {
 
     const tokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(token);
+    if (!tokenInfo.value) {
+      throw new Error(`Token not found: ${token.toString()}`);
+    }
 
     return this.program.methods
       .setExToken(is_accepted)
@@ -439,6 +475,9 @@ export default class PreMarket {
 
     const exTokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(exToken);
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${exToken.toString()}`);
+    }
 
     const userTokenAccount = await getAssociatedTokenAddress(
       exToken,
@@ -559,6 +598,9 @@ export default class PreMarket {
 
     const exTokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(exToken);
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${exToken.toString()}`);
+    }
 
     let userTokenAccount = await getAssociatedTokenAddress(
       exToken,
@@ -630,13 +672,17 @@ export default class PreMarket {
     );
   }
 
-  async settleOrder(id: number): Promise<Transaction> {
+  async settleOrder(
+    id: number,
+    _orderData?: anchor.IdlAccounts<PreMarketType>["orderAccount"],
+    isAtaCreated: boolean = false
+  ): Promise<Transaction> {
     const orderAccountPubKey = getOrderAccountPubKey(
       this.program,
       this.configAccountPubKey,
       id
     );
-    const orderAccount = await this.fetchOrderAccount(id);
+    const orderAccount = _orderData ?? (await this.fetchOrderAccount(id));
 
     const offerAccount = await this.program.account.offerAccount.fetch(
       orderAccount.offer
@@ -653,6 +699,11 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         tokenConfigAccount.token
       );
+    if (!tokenInfo.value) {
+      throw new Error(
+        `Token not found: ${tokenConfigAccount.token.toString()}`
+      );
+    }
 
     const sellerTokenAccount = await getAssociatedTokenAddress(
       tokenConfigAccount.token,
@@ -678,6 +729,9 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         offerAccount.exToken
       );
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
+    }
 
     const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
       offerAccount.exToken,
@@ -693,65 +747,6 @@ export default class PreMarket {
       tokenInfo.value.owner
     );
 
-    const finalTransaction = new Transaction();
-
-    try {
-      await getAccount(
-        this.connection,
-        feeExTokenAccountPubKey,
-        "confirmed",
-        exTokenInfo.value.owner
-      );
-    } catch (e) {
-      finalTransaction.add(
-        createAssociatedTokenAccountInstruction(
-          orderAccount.seller,
-          feeExTokenAccountPubKey,
-          this.configAccount.feeWallet,
-          offerAccount.exToken,
-          exTokenInfo.value.owner
-        )
-      );
-    }
-
-    try {
-      await getAccount(
-        this.connection,
-        feeTokenAccountPubKey,
-        "confirmed",
-        tokenInfo.value.owner
-      );
-    } catch (e) {
-      finalTransaction.add(
-        createAssociatedTokenAccountInstruction(
-          orderAccount.seller,
-          feeTokenAccountPubKey,
-          this.configAccount.feeWallet,
-          tokenConfigAccount.token,
-          tokenInfo.value.owner
-        )
-      );
-    }
-
-    try {
-      await getAccount(
-        this.connection,
-        buyerTokenAccount,
-        "confirmed",
-        tokenInfo.value.owner
-      );
-    } catch (e) {
-      finalTransaction.add(
-        createAssociatedTokenAccountInstruction(
-          orderAccount.seller,
-          buyerTokenAccount,
-          orderAccount.buyer,
-          tokenConfigAccount.token,
-          tokenInfo.value.owner
-        )
-      );
-    }
-
     const sellerExTokenAccountPubKey = getAssociatedTokenAddressSync(
       offerAccount.exToken,
       orderAccount.seller,
@@ -759,23 +754,84 @@ export default class PreMarket {
       exTokenInfo.value.owner
     );
 
-    try {
-      await getAccount(
-        this.connection,
-        sellerExTokenAccountPubKey,
-        "confirmed",
-        exTokenInfo.value.owner
-      );
-    } catch (e) {
-      finalTransaction.add(
-        createAssociatedTokenAccountInstruction(
-          orderAccount.seller,
-          sellerExTokenAccountPubKey,
-          orderAccount.seller,
-          offerAccount.exToken,
+    const finalTransaction = new Transaction();
+
+    if (!isAtaCreated) {
+      try {
+        await getAccount(
+          this.connection,
+          feeExTokenAccountPubKey,
+          "confirmed",
           exTokenInfo.value.owner
-        )
-      );
+        );
+      } catch (e) {
+        finalTransaction.add(
+          createAssociatedTokenAccountInstruction(
+            orderAccount.seller,
+            feeExTokenAccountPubKey,
+            this.configAccount.feeWallet,
+            offerAccount.exToken,
+            exTokenInfo.value.owner
+          )
+        );
+      }
+
+      try {
+        await getAccount(
+          this.connection,
+          feeTokenAccountPubKey,
+          "confirmed",
+          tokenInfo.value.owner
+        );
+      } catch (e) {
+        finalTransaction.add(
+          createAssociatedTokenAccountInstruction(
+            orderAccount.seller,
+            feeTokenAccountPubKey,
+            this.configAccount.feeWallet,
+            tokenConfigAccount.token,
+            tokenInfo.value.owner
+          )
+        );
+      }
+
+      try {
+        await getAccount(
+          this.connection,
+          buyerTokenAccount,
+          "confirmed",
+          tokenInfo.value.owner
+        );
+      } catch (e) {
+        finalTransaction.add(
+          createAssociatedTokenAccountInstruction(
+            orderAccount.seller,
+            buyerTokenAccount,
+            orderAccount.buyer,
+            tokenConfigAccount.token,
+            tokenInfo.value.owner
+          )
+        );
+      }
+
+      try {
+        await getAccount(
+          this.connection,
+          sellerExTokenAccountPubKey,
+          "confirmed",
+          exTokenInfo.value.owner
+        );
+      } catch (e) {
+        finalTransaction.add(
+          createAssociatedTokenAccountInstruction(
+            orderAccount.seller,
+            sellerExTokenAccountPubKey,
+            orderAccount.seller,
+            offerAccount.exToken,
+            exTokenInfo.value.owner
+          )
+        );
+      }
     }
 
     const exTokenAccountPubKey = getExTokenAccountPubKey(
@@ -822,6 +878,43 @@ export default class PreMarket {
     return finalTransaction;
   }
 
+  async settleBatchOrder(
+    offerId: number,
+    seller: PublicKey
+  ): Promise<Transaction[]> {
+    const offer = getOfferAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      offerId
+    );
+    const orders = await this.program.account.orderAccount.all([
+      {
+        memcmp: {
+          offset: 49,
+          bytes: offer.toBase58(),
+        },
+      },
+      {
+        memcmp: {
+          offset: 114,
+          bytes: seller.toBase58(),
+        },
+      },
+    ]);
+
+    const transactions = await Promise.all(
+      orders.map((order, index) =>
+        this.settleOrder(
+          order.account.id.toNumber(),
+          order.account,
+          index === 0
+        )
+      )
+    );
+
+    return transactions;
+  }
+
   async settleOrderWithDiscount(
     id: number,
     settleVerifier: PublicKey,
@@ -855,6 +948,19 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         tokenConfigAccount.token
       );
+    if (!tokenInfo.value) {
+      throw new Error(
+        `Token not found: ${tokenConfigAccount.token.toString()}`
+      );
+    }
+
+    const exTokenInfo =
+      await this.program.provider.connection.getParsedAccountInfo(
+        offerAccount.exToken
+      );
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
+    }
 
     const sellerTokenAccount = await getAssociatedTokenAddress(
       tokenConfigAccount.token,
@@ -875,11 +981,6 @@ export default class PreMarket {
       this.configAccountPubKey,
       offerAccount.exToken
     );
-
-    const exTokenInfo =
-      await this.program.provider.connection.getParsedAccountInfo(
-        offerAccount.exToken
-      );
 
     const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
       offerAccount.exToken,
@@ -1064,6 +1165,9 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         offerAccount.exToken
       );
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
+    }
 
     const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
       offerAccount.exToken,
@@ -1153,6 +1257,9 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         offerAccount.exToken
       );
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
+    }
 
     const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
       offerAccount.exToken,
@@ -1239,6 +1346,9 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         offerAccount.exToken
       );
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
+    }
 
     const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
       offerAccount.exToken,
@@ -1360,6 +1470,9 @@ export default class PreMarket {
       await this.program.provider.connection.getParsedAccountInfo(
         offerAccount.exToken
       );
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
+    }
 
     const buyerExTokenAccountPubKey = getAssociatedTokenAddressSync(
       offerAccount.exToken,
@@ -1448,6 +1561,9 @@ export default class PreMarket {
 
     const exTokenInfo =
       await this.program.provider.connection.getParsedAccountInfo(exToken);
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${exToken.toString()}`);
+    }
 
     const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
       exToken,

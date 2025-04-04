@@ -274,6 +274,42 @@ export type PreMarketType = {
       ]
     },
     {
+      "name": "updateSettleDuration",
+      "accounts": [
+        {
+          "name": "tokenConfigAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "configAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "roleAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "operator",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "settleDuration",
+          "type": "i64"
+        }
+      ]
+    },
+    {
       "name": "updateTokenAddress",
       "accounts": [
         {
@@ -2564,6 +2600,42 @@ export const IDL: PreMarketType = {
           "type": {
             "option": "u64"
           }
+        }
+      ]
+    },
+    {
+      "name": "updateSettleDuration",
+      "accounts": [
+        {
+          "name": "tokenConfigAccount",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "configAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "roleAccount",
+          "isMut": false,
+          "isSigner": false
+        },
+        {
+          "name": "authority",
+          "isMut": true,
+          "isSigner": false
+        },
+        {
+          "name": "operator",
+          "isMut": true,
+          "isSigner": true
+        }
+      ],
+      "args": [
+        {
+          "name": "settleDuration",
+          "type": "i64"
         }
       ]
     },
