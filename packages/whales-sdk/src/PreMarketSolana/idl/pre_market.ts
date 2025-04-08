@@ -938,7 +938,13 @@ export type PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "roleAccount",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "userOrOperator",
           "isMut": true,
           "isSigner": true
         },
@@ -1019,7 +1025,13 @@ export type PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "buyer",
+          "name": "roleAccount",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerOrOperator",
           "isMut": true,
           "isSigner": true
         },
@@ -1090,6 +1102,12 @@ export type PreMarketType = {
           "isSigner": false
         },
         {
+          "name": "sellerExTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
           "name": "exTokenAccount",
           "isMut": false,
           "isSigner": false
@@ -1100,17 +1118,23 @@ export type PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "roleAccount",
+          "name": "settleRoleAccount",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "operator",
+          "name": "settleOperator",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "cancelRoleAccount",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerOrOperator",
           "isMut": true,
           "isSigner": true
         },
@@ -1138,6 +1162,10 @@ export type PreMarketType = {
       "args": [
         {
           "name": "buyerFeeDiscount",
+          "type": "u64"
+        },
+        {
+          "name": "sellerFeeDiscount",
           "type": "u64"
         }
       ]
@@ -3268,7 +3296,13 @@ export const IDL: PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "user",
+          "name": "roleAccount",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "userOrOperator",
           "isMut": true,
           "isSigner": true
         },
@@ -3349,7 +3383,13 @@ export const IDL: PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "buyer",
+          "name": "roleAccount",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerOrOperator",
           "isMut": true,
           "isSigner": true
         },
@@ -3420,6 +3460,12 @@ export const IDL: PreMarketType = {
           "isSigner": false
         },
         {
+          "name": "sellerExTokenAccount",
+          "isMut": true,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
           "name": "exTokenAccount",
           "isMut": false,
           "isSigner": false
@@ -3430,17 +3476,23 @@ export const IDL: PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "roleAccount",
+          "name": "settleRoleAccount",
           "isMut": false,
           "isSigner": false
         },
         {
-          "name": "operator",
+          "name": "settleOperator",
           "isMut": true,
           "isSigner": true
         },
         {
-          "name": "buyer",
+          "name": "cancelRoleAccount",
+          "isMut": false,
+          "isSigner": false,
+          "isOptional": true
+        },
+        {
+          "name": "buyerOrOperator",
           "isMut": true,
           "isSigner": true
         },
@@ -3468,6 +3520,10 @@ export const IDL: PreMarketType = {
       "args": [
         {
           "name": "buyerFeeDiscount",
+          "type": "u64"
+        },
+        {
+          "name": "sellerFeeDiscount",
           "type": "u64"
         }
       ]

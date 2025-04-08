@@ -1226,7 +1226,10 @@ export default class PreMarket {
     return finalTransaction;
   }
 
-  async cancelUnfilledOrder(id: number): Promise<Transaction> {
+  async cancelUnfilledOrder(
+    id: number,
+    cancelOperator: PublicKey | null = null
+  ): Promise<Transaction> {
     const orderAccountPubKey = getOrderAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -1261,19 +1264,40 @@ export default class PreMarket {
       throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
     }
 
-    const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
+    const feeExTokenAccountPubKey = getAssociatedTokenAddressSync(
       offerAccount.exToken,
       this.configAccount.feeWallet,
       false,
       exTokenInfo.value.owner
     );
 
-    const buyerExTokenAccountPubKey = await getAssociatedTokenAddress(
+    const buyerExTokenAccountPubKey = getAssociatedTokenAddressSync(
       offerAccount.exToken,
       orderAccount.buyer,
       false,
       exTokenInfo.value.owner
     );
+
+    const finalTransaction = new Transaction();
+
+    try {
+      await getAccount(
+        this.connection,
+        buyerExTokenAccountPubKey,
+        "confirmed",
+        exTokenInfo.value.owner
+      );
+    } catch (e) {
+      finalTransaction.add(
+        createAssociatedTokenAccountInstruction(
+          cancelOperator ?? orderAccount.buyer,
+          buyerExTokenAccountPubKey,
+          orderAccount.buyer,
+          offerAccount.exToken,
+          exTokenInfo.value.owner
+        )
+      );
+    }
 
     const transaction = await this.program.methods
       .cancelUnFilledOrder()
@@ -1287,28 +1311,42 @@ export default class PreMarket {
         buyerExTokenAccount: buyerExTokenAccountPubKey,
         exTokenAccount: exTokenAccountPubKey,
         exToken: offerAccount.exToken,
-        buyer: orderAccount.buyer,
+        roleAccount: cancelOperator
+          ? getRoleAccountPubKey(
+              this.program,
+              this.configAccountPubKey,
+              cancelOperator
+            )
+          : null,
+        buyerOrOperator: cancelOperator ?? orderAccount.buyer,
         feeWallet: this.configAccount.feeWallet,
         configAuthority: this.configAccount.authority,
         tokenProgram: exTokenInfo.value.owner,
       })
       .transaction();
 
-    if (offerAccount.exToken.toString() == NATIVE_MINT.toString()) {
+    finalTransaction.add(transaction);
+
+    if (
+      offerAccount.exToken.toString() == NATIVE_MINT.toString() &&
+      !cancelOperator
+    ) {
       const transactionUnWrapSol = new Transaction().add(
         ...(await buildInstructionsUnWrapSol(orderAccount.buyer))
       );
 
-      return transaction.add(transactionUnWrapSol);
+      return finalTransaction.add(transactionUnWrapSol);
     }
 
-    return transaction;
+    return finalTransaction;
   }
 
   async cancelOrderWithDiscount(
     id: number,
     settleVerifier: PublicKey,
-    buyerFeeDiscount: BN
+    buyerFeeDiscount: BN,
+    sellerFeeDiscount: BN,
+    cancelOperator: PublicKey | null = null
   ): Promise<Transaction> {
     const roleAccountPubKey = getRoleAccountPubKey(
       this.program,
@@ -1350,16 +1388,23 @@ export default class PreMarket {
       throw new Error(`Token not found: ${offerAccount.exToken.toString()}`);
     }
 
-    const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
+    const feeExTokenAccountPubKey = getAssociatedTokenAddressSync(
       offerAccount.exToken,
       this.configAccount.feeWallet,
       false,
       exTokenInfo.value.owner
     );
 
-    const buyerExTokenAccountPubKey = await getAssociatedTokenAddress(
+    const buyerExTokenAccountPubKey = getAssociatedTokenAddressSync(
       offerAccount.exToken,
       orderAccount.buyer,
+      false,
+      exTokenInfo.value.owner
+    );
+
+    const sellerExTokenAccountPubKey = await getAssociatedTokenAddress(
+      offerAccount.exToken,
+      orderAccount.seller,
       false,
       exTokenInfo.value.owner
     );
@@ -1376,7 +1421,7 @@ export default class PreMarket {
     } catch (e) {
       finalTransaction.add(
         createAssociatedTokenAccountInstruction(
-          orderAccount.buyer,
+          cancelOperator ?? orderAccount.buyer,
           feeExTokenAccountPubKey,
           this.configAccount.feeWallet,
           offerAccount.exToken,
@@ -1395,7 +1440,7 @@ export default class PreMarket {
     } catch (e) {
       finalTransaction.add(
         createAssociatedTokenAccountInstruction(
-          orderAccount.buyer,
+          cancelOperator ?? orderAccount.buyer,
           buyerExTokenAccountPubKey,
           orderAccount.buyer,
           offerAccount.exToken,
@@ -1404,8 +1449,29 @@ export default class PreMarket {
       );
     }
 
+    if (sellerFeeDiscount.gtn(0)) {
+      try {
+        await getAccount(
+          this.connection,
+          sellerExTokenAccountPubKey,
+          "confirmed",
+          exTokenInfo.value.owner
+        );
+      } catch (e) {
+        finalTransaction.add(
+          createAssociatedTokenAccountInstruction(
+            orderAccount.buyer,
+            sellerExTokenAccountPubKey,
+            orderAccount.seller,
+            offerAccount.exToken,
+            exTokenInfo.value.owner
+          )
+        );
+      }
+    }
+
     const transaction = await this.program.methods
-      .cancelUnFilledOrderWithDiscount(buyerFeeDiscount)
+      .cancelUnFilledOrderWithDiscount(buyerFeeDiscount, sellerFeeDiscount)
       .accountsStrict({
         orderAccount: orderAccountPubKey,
         offerAccount: orderAccount.offer,
@@ -1414,11 +1480,21 @@ export default class PreMarket {
         vaultExTokenAccount: vaultExTokenAccountPubKey,
         feeExTokenAccount: feeExTokenAccountPubKey,
         buyerExTokenAccount: buyerExTokenAccountPubKey,
+        sellerExTokenAccount: sellerFeeDiscount.gtn(0)
+          ? sellerExTokenAccountPubKey
+          : null,
         exTokenAccount: exTokenAccountPubKey,
         exToken: offerAccount.exToken,
-        operator: settleVerifier,
-        roleAccount: roleAccountPubKey,
-        buyer: orderAccount.buyer,
+        settleOperator: settleVerifier,
+        settleRoleAccount: roleAccountPubKey,
+        cancelRoleAccount: cancelOperator
+          ? getRoleAccountPubKey(
+              this.program,
+              this.configAccountPubKey,
+              cancelOperator
+            )
+          : null,
+        buyerOrOperator: cancelOperator ?? orderAccount.buyer,
         feeWallet: this.configAccount.feeWallet,
         configAuthority: this.configAccount.authority,
         tokenProgram: exTokenInfo.value.owner,
@@ -1428,7 +1504,10 @@ export default class PreMarket {
 
     finalTransaction.add(transaction);
 
-    if (offerAccount.exToken.toString() == NATIVE_MINT.toString()) {
+    if (
+      offerAccount.exToken.toString() == NATIVE_MINT.toString() &&
+      !cancelOperator
+    ) {
       const transactionUnWrapSol = new Transaction().add(
         ...(await buildInstructionsUnWrapSol(orderAccount.buyer))
       );
@@ -1541,7 +1620,10 @@ export default class PreMarket {
     return transaction;
   }
 
-  async closeUnFullFilledOffer(id: number): Promise<Transaction> {
+  async closeUnFullFilledOffer(
+    id: number,
+    cancelOperator: PublicKey | null = null
+  ): Promise<Transaction> {
     const offerAccountPubKey = getOfferAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -1585,6 +1667,27 @@ export default class PreMarket {
       exToken
     );
 
+    const finalTransaction = new Transaction();
+
+    try {
+      await getAccount(
+        this.connection,
+        userExTokenAccountPubKey,
+        "confirmed",
+        exTokenInfo.value.owner
+      );
+    } catch (e) {
+      finalTransaction.add(
+        createAssociatedTokenAccountInstruction(
+          cancelOperator ?? user,
+          userExTokenAccountPubKey,
+          user,
+          offerAccount.exToken,
+          exTokenInfo.value.owner
+        )
+      );
+    }
+
     const transaction = await this.program.methods
       .closeUnFullFilledOffer()
       .accounts({
@@ -1596,22 +1699,34 @@ export default class PreMarket {
         userExTokenAccount: userExTokenAccountPubKey,
         exTokenAccount: exTokenAccountPubKey,
         exToken,
-        user: user,
+        roleAccount: cancelOperator
+          ? getRoleAccountPubKey(
+              this.program,
+              this.configAccountPubKey,
+              cancelOperator
+            )
+          : null,
+        userOrOperator: cancelOperator ?? user,
         feeWallet: this.configAccount.feeWallet,
         configAuthority: this.configAccount.authority,
         tokenProgram: exTokenInfo.value.owner,
       })
       .transaction();
 
-    if (offerAccount.exToken.toString() == NATIVE_MINT.toString()) {
+    finalTransaction.add(transaction);
+
+    if (
+      offerAccount.exToken.toString() == NATIVE_MINT.toString() &&
+      !cancelOperator
+    ) {
       const transactionUnWrapSol = new Transaction().add(
         ...(await buildInstructionsUnWrapSol(user))
       );
 
-      return transaction.add(transactionUnWrapSol);
+      return finalTransaction.add(transactionUnWrapSol);
     }
 
-    return transaction;
+    return finalTransaction;
   }
 
   private async getProgramSignatures(params?: {
