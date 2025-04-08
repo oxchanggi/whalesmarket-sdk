@@ -350,6 +350,27 @@ export class ApiAnchorAdapter implements AnchorAdapter {
   }
 
   /**
+   * Settle a batch of orders for an offer
+   */
+  async settleBatchOrder(offerId: number): Promise<Transaction[]> {
+    try {
+      const response = await axios.post(
+        `${this.apiBaseUrl}/orders/batch-settle`,
+        {
+          offerId,
+        },
+        {
+          headers: this.getPostHeaders(),
+        }
+      );
+      return response.data.transactions;
+    } catch (error) {
+      console.error(`Error settling batch order ${offerId}:`, error);
+      throw new Error(`Failed to settle batch order: ${error}`);
+    }
+  }
+
+  /**
    * Set ex-token acceptance
    */
   async setExToken(

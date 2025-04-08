@@ -118,4 +118,12 @@ export interface AnchorAdapter {
    * @returns Transaction data
    */
   matchOffer(params: MatchOfferParams): Promise<any>;
+
+  /**
+   * Settle a batch of orders for an offer
+   * @param offerId The ID of the offer to get orders for
+   * @param userPublicKey The public key of the user
+   * @returns Array of transactions
+   */
+  settleBatchOrder(offerId: number): Promise<any[]>;
 }

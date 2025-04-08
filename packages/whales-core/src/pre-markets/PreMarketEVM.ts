@@ -258,6 +258,18 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   }
 
   /**
+   * Settle a batch of orders
+   * @param offerId The ID of the offer to settle
+   * @returns Transaction of type T
+   */
+  public async settleBatchOrder(
+    offerId: number
+  ): Promise<ethers.PopulatedTransaction> {
+    const orderIds: number[] = [];
+    return this.buildBatchSettleFilledsTx(orderIds);
+  }
+
+  /**
    * Check if a token is accepted for trading
    * @param token The token address
    * @returns Whether the token is accepted
@@ -603,6 +615,20 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   }
 
   /**
+   * Builds a transaction to settle multiple filled orders
+   * @param orderIds Array of order IDs to settle
+   * @returns Populated transaction
+   */
+  public async buildBatchSettleFilledsTx(
+    orderIds: number[]
+  ): Promise<ethers.PopulatedTransaction> {
+    // Convert number array to BigNumber array
+    const orderIdsBN = orderIds.map((id) => ethers.BigNumber.from(id));
+
+    return this.buildSettleFilledsRawTx(orderIdsBN);
+  }
+
+  /**
    * Builds a raw transaction to settle a cancelled order
    * @param orderId The order ID to settle
    * @returns Populated transaction
@@ -803,7 +829,7 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   /**
    * Builds a raw transaction to update the contract configuration
    * @param feeWallet The fee wallet address
-   * @param feeSettle The settlement fee
+le The settlement fee
    * @param feeRefund The refund fee
    * @param pledgeRate The pledge rate
    * @returns Populated transaction

@@ -349,6 +349,14 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
     return this.preMarket.settleOrder(orderId);
   }
 
+  async settleBatchOrder(offerId: number): Promise<Transaction[]> {
+    const sellerPublicKey = this.getSignerPublicKey();
+    if (!sellerPublicKey) {
+      throw new Error("No signer set or signer has no public key");
+    }
+    return this.preMarket.settleBatchOrder(offerId, sellerPublicKey);
+  }
+
   /**
    * Check if a token is accepted for trading
    * @param token The token address

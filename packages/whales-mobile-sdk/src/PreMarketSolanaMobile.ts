@@ -145,6 +145,10 @@ class PreMarketOriginalMobile {
   ): Promise<Transaction> {
     return this.adapter.cancelOrder(orderId, userPublicKey);
   }
+
+  async settleBatchOrder(offerId: number): Promise<Transaction[]> {
+    return this.adapter.settleBatchOrder(offerId);
+  }
 }
 
 /**
@@ -536,5 +540,9 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
       throw new Error("No signer set or signer has no public key");
     }
     return this.preMarket.cancelOrder(orderId, signerPublicKey);
+  }
+
+  async settleBatchOrder(offerId: number): Promise<Transaction[]> {
+    return this.preMarket.settleBatchOrder(offerId);
   }
 }

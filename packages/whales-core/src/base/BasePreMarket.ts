@@ -103,6 +103,13 @@ export abstract class BasePreMarket<T, S extends string = string> {
   abstract settleOrder(orderId: number): Promise<T>;
 
   /**
+   * Settle a batch of orders
+   * @param offerId The ID of the offer to settle
+   * @returns Transaction of type T
+   */
+  abstract settleBatchOrder(offerId: number): Promise<T[] | T>;
+
+  /**
    * Check if a token is accepted for trading
    * @param token The token address or identifier
    * @returns Whether the token is accepted
