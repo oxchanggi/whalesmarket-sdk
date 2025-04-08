@@ -12,7 +12,6 @@ import {
 } from "../base/BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
 import { TokenEVM } from "../tokens/TokenEVM";
-import axios from "axios";
 
 interface BatchOrderResponse {
   data: {
@@ -283,10 +282,17 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
     const url = this.isMainnet(chainId)
       ? "https://api.whales.market"
       : "https://api-dev.whales-market.site";
-    const res = await axios.get<BatchOrderResponse>(
+
+    const response = await fetch(
       `${url}/v2/orders-by-offer-index?offerIndex=${offerId}&chainId=${chainId}&sortType=DESC`
     );
-    const orderIds = res.data.data.list.map((order) => order.order_index);
+
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+
+    const data = (await response.json()) as BatchOrderResponse;
+    const orderIds = data.data.list.map((order) => order.order_index);
     return this.buildBatchSettleFilledsTx(orderIds);
   }
 
