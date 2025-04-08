@@ -103,6 +103,13 @@ export abstract class BasePreMarket<T, S extends string = string> {
   abstract settleOrder(orderId: number): Promise<T>;
 
   /**
+   * Cancel an order
+   * @param orderId The ID of the order to cancel
+   * @returns Transaction of type T
+   */
+  abstract cancelOrder(orderId: number): Promise<T>;
+
+  /**
    * Settle a batch of orders
    * @param offerId The ID of the offer to settle
    * @returns Transaction of type T

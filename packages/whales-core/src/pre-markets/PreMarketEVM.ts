@@ -269,6 +269,17 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   }
 
   /**
+   * Cancel an order
+   * @param orderId The ID of the order to cancel
+   * @returns Transaction of type T
+   */
+  public async cancelOrder(
+    orderId: number
+  ): Promise<ethers.PopulatedTransaction> {
+    return this.buildSettleCancelledTx(orderId);
+  }
+
+  /**
    * Settle a batch of orders
    * @param offerId The ID of the offer to settle
    * @returns Transaction of type T

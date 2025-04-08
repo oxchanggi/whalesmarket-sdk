@@ -453,6 +453,6 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
    * @returns Transaction data
    */
   async cancelOrder(orderId: number): Promise<Transaction> {
-    return this.preMarket.cancelOrder(orderId, this.getSignerPublicKey()!);
+    return this.preMarket.cancelUnfilledOrder(orderId);
   }
 }
