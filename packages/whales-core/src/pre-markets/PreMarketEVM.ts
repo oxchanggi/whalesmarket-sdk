@@ -12,6 +12,18 @@ import {
 } from "../base/BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
 import { TokenEVM } from "../tokens/TokenEVM";
+import axios from "axios";
+
+interface BatchOrderResponse {
+  data: {
+    list: Array<{
+      order_index: number;
+    }>;
+    total: number;
+    offerIndex: number;
+    chainId: number;
+  };
+}
 
 /**
  * Class for interacting with the PreMarket contract
@@ -265,7 +277,16 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   public async settleBatchOrder(
     offerId: number
   ): Promise<ethers.PopulatedTransaction> {
-    const orderIds: number[] = [];
+    // get chainId from rpc
+    const network = await this.contract.provider.getNetwork();
+    const chainId = network.chainId;
+    const url = this.isMainnet(chainId)
+      ? "https://api.whales.market"
+      : "https://api-dev.whales-market.site";
+    const res = await axios.get<BatchOrderResponse>(
+      `${url}/v2/orders-by-offer-index?offerIndex=${offerId}&chainId=${chainId}&sortType=DESC`
+    );
+    const orderIds = res.data.data.list.map((order) => order.order_index);
     return this.buildBatchSettleFilledsTx(orderIds);
   }
 
@@ -829,7 +850,6 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   /**
    * Builds a raw transaction to update the contract configuration
    * @param feeWallet The fee wallet address
-le The settlement fee
    * @param feeRefund The refund fee
    * @param pledgeRate The pledge rate
    * @returns Populated transaction
@@ -1003,5 +1023,52 @@ le The settlement fee
    */
   public async getToken(tokenId: string): Promise<any> {
     return this.contract.tokens(tokenId);
+  }
+
+  /**
+   * Check if the current network is mainnet
+   * @returns True if it is mainnet, False if it is testnet
+   */
+  public isMainnet(chainId: number): boolean {
+    // Các chainId của mainnet
+    const mainnetChainIds = [
+      1, // Ethereum Mainnet
+      56, // Binance Smart Chain Mainnet
+      137, // Polygon Mainnet
+      42161, // Arbitrum Mainnet
+      10, // Optimism Mainnet
+      43114, // Avalanche C-Chain Mainnet
+      250, // Fantom Opera Mainnet
+      100, // Gnosis Chain
+      324, // zkSync Era Mainnet
+      8453, // Base Mainnet
+    ];
+
+    return mainnetChainIds.includes(chainId);
+  }
+
+  /**
+   * Check if the current network is testnet
+   * @returns True if it is testnet, False if it is mainnet
+   */
+  public async isTestnet(): Promise<boolean> {
+    const network = await this.contract.provider.getNetwork();
+    const chainId = network.chainId;
+
+    // Các chainId của testnet
+    const testnetChainIds = [
+      5, // Goerli Testnet
+      11155111, // Sepolia Testnet
+      80001, // Polygon Mumbai Testnet
+      421613, // Arbitrum Goerli Testnet
+      420, // Optimism Goerli Testnet
+      43113, // Avalanche Fuji Testnet
+      4002, // Fantom Testnet
+      1442, // Polygon zkEVM Testnet
+      84531, // Base Goerli Testnet
+      534351, // Scroll Sepolia Testnet
+    ];
+
+    return testnetChainIds.includes(chainId);
   }
 }
