@@ -673,8 +673,8 @@ export default class PreMarket {
   async settleOrder(
     id: number,
     _orderData?: anchor.IdlAccounts<PreMarketType>["orderAccount"],
-    isAtaCreated: boolean = false
-  ): Promise<Transaction> {
+    createdAta: string[] = []
+  ): Promise<{ finalTransaction: Transaction; createdAta: string[] }> {
     const orderAccountPubKey = getOrderAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -753,8 +753,9 @@ export default class PreMarket {
     );
 
     const finalTransaction = new Transaction();
+    const _createdAta: string[] = [];
 
-    if (!isAtaCreated) {
+    if (!createdAta.includes(feeExTokenAccountPubKey.toString())) {
       try {
         await getAccount(
           this.connection,
@@ -763,6 +764,7 @@ export default class PreMarket {
           exTokenInfo.value.owner
         );
       } catch (e) {
+        _createdAta.push(feeExTokenAccountPubKey.toString());
         finalTransaction.add(
           createAssociatedTokenAccountInstruction(
             orderAccount.seller,
@@ -773,7 +775,9 @@ export default class PreMarket {
           )
         );
       }
+    }
 
+    if (!createdAta.includes(feeTokenAccountPubKey.toString())) {
       try {
         await getAccount(
           this.connection,
@@ -782,6 +786,7 @@ export default class PreMarket {
           tokenInfo.value.owner
         );
       } catch (e) {
+        _createdAta.push(feeTokenAccountPubKey.toString());
         finalTransaction.add(
           createAssociatedTokenAccountInstruction(
             orderAccount.seller,
@@ -792,7 +797,9 @@ export default class PreMarket {
           )
         );
       }
+    }
 
+    if (!createdAta.includes(buyerTokenAccount.toString())) {
       try {
         await getAccount(
           this.connection,
@@ -801,6 +808,7 @@ export default class PreMarket {
           tokenInfo.value.owner
         );
       } catch (e) {
+        _createdAta.push(buyerTokenAccount.toString());
         finalTransaction.add(
           createAssociatedTokenAccountInstruction(
             orderAccount.seller,
@@ -811,7 +819,9 @@ export default class PreMarket {
           )
         );
       }
+    }
 
+    if (!createdAta.includes(sellerExTokenAccountPubKey.toString())) {
       try {
         await getAccount(
           this.connection,
@@ -820,6 +830,7 @@ export default class PreMarket {
           exTokenInfo.value.owner
         );
       } catch (e) {
+        _createdAta.push(sellerExTokenAccountPubKey.toString());
         finalTransaction.add(
           createAssociatedTokenAccountInstruction(
             orderAccount.seller,
@@ -870,10 +881,10 @@ export default class PreMarket {
         ...(await buildInstructionsUnWrapSol(orderAccount.seller))
       );
 
-      return finalTransaction.add(transactionUnWrapSol);
+      finalTransaction.add(transactionUnWrapSol);
     }
 
-    return finalTransaction;
+    return { finalTransaction, createdAta: _createdAta };
   }
 
   async settleBatchOrder(
@@ -900,14 +911,21 @@ export default class PreMarket {
       },
     ]);
 
+    const _createdAta: string[] = [];
     const transactions = await Promise.all(
-      orders.map((order, index) =>
-        this.settleOrder(
+      orders.map(async (order, index) => {
+        const { createdAta, finalTransaction } = await this.settleOrder(
           order.account.id.toNumber(),
           order.account,
-          index === 0
-        )
-      )
+          _createdAta
+        );
+
+        // remove duplicate created ata
+        _createdAta.push(
+          ...createdAta.filter((ata) => !_createdAta.includes(ata))
+        );
+        return finalTransaction;
+      })
     );
 
     return transactions;

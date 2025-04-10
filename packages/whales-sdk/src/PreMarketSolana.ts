@@ -346,7 +346,12 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
    * @returns Transaction data
    */
   async settleOrder(orderId: number): Promise<Transaction> {
-    return this.preMarket.settleOrder(orderId);
+    const { finalTransaction } = await this.preMarket.settleOrder(
+      orderId,
+      undefined,
+      []
+    );
+    return finalTransaction;
   }
 
   async settleBatchOrder(offerId: number): Promise<Transaction[]> {
