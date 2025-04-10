@@ -178,3 +178,6 @@ else
 fi
 
 echo -e "${GREEN}Done${NC}" 
+
+# Remove tsconfig.tsbuildinfo
+rm -rf whales-core/tsconfig.tsbuildinfo
