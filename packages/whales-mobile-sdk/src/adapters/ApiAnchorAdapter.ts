@@ -363,7 +363,12 @@ export class ApiAnchorAdapter implements AnchorAdapter {
           headers: this.getPostHeaders(),
         }
       );
-      return response.data.transactions;
+      // Convert the serialized transactions back to a Transaction object
+      const serializedTxs = response.data.transactions;
+      const transactions: Transaction[] = serializedTxs.map((tx: any) =>
+        Transaction.from(Buffer.from(tx, "base64"))
+      );
+      return transactions;
     } catch (error) {
       console.error(`Error settling batch order ${offerId}:`, error);
       throw new Error(`Failed to settle batch order: ${error}`);
