@@ -1088,4 +1088,70 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
 
     return testnetChainIds.includes(chainId);
   }
+
+  /**
+   * Check the allowance of tokens that a spender is allowed to use
+   * @param spender The address of the spender
+   * @param tokenAddress The address of the token
+   * @returns The amount of tokens the spender is allowed to use
+   */
+  public async checkAllowance(
+    spender: string,
+    tokenAddress: string
+  ): Promise<number> {
+    try {
+      // For ETH (native token), there's no concept of allowance
+      if (tokenAddress.toLowerCase() === this.ETH_ADDRESS.toLowerCase()) {
+        return Number.MAX_SAFE_INTEGER; // Unlimited allowance for ETH
+      }
+
+      // Get the owner's address
+      if (!this._pubkey) {
+        throw new Error("No owner public key available");
+      }
+      const owner = this._pubkey;
+
+      // Use the TokenEVM instance to check allowance
+      const allowance = await this.tokens.getAllowance(
+        tokenAddress,
+        owner,
+        spender
+      );
+
+      return allowance;
+    } catch (error) {
+      console.error("Error checking allowance:", error);
+      return 0;
+    }
+  }
+
+  /**
+   * Approve a spender to use a specific amount of tokens
+   * @param spender The address of the spender
+   * @param tokenAddress The address of the token
+   * @param amount The amount of tokens to approve
+   * @returns A populated transaction for approval
+   */
+  public async approve(
+    spender: string,
+    tokenAddress: string,
+    amount: number
+  ): Promise<ethers.PopulatedTransaction> {
+    try {
+      // For ETH (native token), there's no concept of approval
+      if (tokenAddress.toLowerCase() === this.ETH_ADDRESS.toLowerCase()) {
+        throw new Error("Cannot approve native ETH");
+      }
+
+      // Use the TokenEVM instance to create the approval transaction
+      return this.tokens.approve(tokenAddress, spender, amount);
+    } catch (error) {
+      console.error("Error approving tokens:", error);
+      throw new Error(
+        `Failed to approve tokens: ${
+          error instanceof Error ? error.message : String(error)
+        }`
+      );
+    }
+  }
 }

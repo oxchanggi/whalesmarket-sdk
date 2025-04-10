@@ -545,4 +545,16 @@ export class PreMarketSolanaMobile extends BasePreMarket<Transaction> {
   async settleBatchOrder(offerId: number): Promise<Transaction[]> {
     return this.preMarket.settleBatchOrder(offerId);
   }
+
+  async checkAllowance(spender: string, tokenAddress: string): Promise<number> {
+    return Number.MAX_SAFE_INTEGER;
+  }
+
+  async approve(
+    spender: string,
+    tokenAddress: string,
+    amount: string | number
+  ): Promise<Transaction> {
+    return new Transaction();
+  }
 }

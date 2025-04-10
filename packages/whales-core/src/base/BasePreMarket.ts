@@ -139,6 +139,30 @@ export abstract class BasePreMarket<T, S extends string = string> {
     txHash: string,
     maxRetries?: number
   ): Promise<TransactionStatus>;
+
+  /**
+   * Check the allowance of tokens that a spender is allowed to use
+   * @param spender The address of the spender
+   * @param tokenAddress The address of the token
+   * @returns The amount of tokens the spender is allowed to use
+   */
+  abstract checkAllowance(
+    spender: string,
+    tokenAddress: string
+  ): Promise<number>;
+
+  /**
+   * Approve a spender to use a specific amount of tokens
+   * @param spender The address of the spender
+   * @param tokenAddress The address of the token
+   * @param amount The amount of tokens to approve
+   * @returns Transaction of type T
+   */
+  abstract approve(
+    spender: string,
+    tokenAddress: string,
+    amount: string | number
+  ): Promise<T>;
 }
 
 /**

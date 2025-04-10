@@ -255,7 +255,7 @@ export class TokenEVM extends BaseToken<
   async approve(
     tokenAddress: string,
     spender: string,
-    amount: number | string
+    amount: number
   ): Promise<ethers.PopulatedTransaction> {
     // Handle ETH case - ETH doesn't support approvals
     if (tokenAddress === ethers.constants.AddressZero) {
