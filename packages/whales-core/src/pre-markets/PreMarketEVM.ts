@@ -1113,8 +1113,8 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
 
       // Use the TokenEVM instance to check allowance
       const allowance = await this.tokens.getAllowance(
-        tokenAddress,
         owner,
+        tokenAddress,
         spender
       );
 
