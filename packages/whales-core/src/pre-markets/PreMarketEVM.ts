@@ -966,6 +966,81 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   }
 
   /**
+   * Wait for a transaction to be confirmed
+   * @param txHash The transaction hash
+   * @param confirmations Number of confirmations to wait for (default: 1)
+   * @param timeout Timeout in milliseconds (default: 60000 - 1 minute)
+   * @returns Transaction status
+   */
+  public async waitTransaction(
+    txHash: string,
+    confirmations: number = 1,
+    timeout: number = 60000
+  ): Promise<TransactionStatus> {
+    // Time to stop waiting
+    const timeoutTime = Date.now() + timeout;
+
+    // Initial delay before first check
+    await new Promise((resolve) => setTimeout(resolve, 1000));
+
+    while (Date.now() < timeoutTime) {
+      try {
+        const receipt = await this.contract.provider.getTransactionReceipt(
+          txHash
+        );
+
+        if (!receipt) {
+          // Transaction not yet mined, wait a bit more
+          await new Promise((resolve) => setTimeout(resolve, 2000));
+          continue;
+        }
+
+        // If we have enough confirmations, return success
+        if (receipt.confirmations >= confirmations) {
+          return {
+            status: receipt.status === 1,
+            confirmations: receipt.confirmations,
+            isCompleted: true,
+            attempts: 1,
+          };
+        }
+
+        // If we need more confirmations, wait a bit more
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      } catch (error: any) {
+        // Log error but continue trying
+        console.error(`Error checking transaction: ${error.message}`);
+        await new Promise((resolve) => setTimeout(resolve, 2000));
+      }
+    }
+
+    // Timeout reached without getting enough confirmations
+    // Check one last time
+    try {
+      const receipt = await this.contract.provider.getTransactionReceipt(
+        txHash
+      );
+      if (receipt) {
+        return {
+          status: receipt.status === 1,
+          confirmations: receipt.confirmations,
+          isCompleted: receipt.confirmations >= confirmations,
+          attempts: 1,
+        };
+      }
+    } catch (error) {
+      // Ignore error on last check
+    }
+
+    return {
+      status: null,
+      confirmations: 0,
+      isCompleted: false,
+      attempts: 1,
+    };
+  }
+
+  /**
    * Check if an offer is a buy offer
    * @param offerId The offer ID
    * @returns True if the offer is a buy offer

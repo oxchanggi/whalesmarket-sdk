@@ -11,6 +11,7 @@ export {
 export {
   getTransactionStatus as getSolanaTransactionStatus,
   signAndSendTransaction as signAndSendSolanaTransaction,
+  waitSolanaTransaction,
 } from "./solana";
 
 export * from "./transactionWrapper";

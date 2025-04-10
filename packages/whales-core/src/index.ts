@@ -2,6 +2,7 @@ export * from "./base";
 export * from "./pre-markets";
 export * from "./utils/helpers";
 export * from "./utils/transaction";
+export { waitSolanaTransaction } from "./utils/solana";
 export * from "./managers";
 // Export React components
 export {

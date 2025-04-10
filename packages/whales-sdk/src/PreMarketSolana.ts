@@ -11,6 +11,7 @@ import {
   TransactionStatus,
   SignerType,
   MatchOfferParams,
+  waitSolanaTransaction,
 } from "@whalesmarket/core";
 import PreMarketOriginal from "./PreMarketSolana/PreMarket";
 import { NATIVE_MINT, getMint } from "@solana/spl-token";
@@ -67,6 +68,26 @@ export class PreMarketSolana extends BasePreMarket<Transaction> {
         attempts: 1,
       };
     }
+  }
+
+  /**
+   * Wait for a transaction to be confirmed
+   * @param txHash The transaction hash
+   * @param confirmations Number of confirmations to wait for (default: 1)
+   * @param timeout Timeout in milliseconds (default: 60000 - 1 minute)
+   * @returns Transaction status
+   */
+  async waitTransaction(
+    txHash: string,
+    confirmations: number = 1,
+    timeout: number = 60000
+  ): Promise<TransactionStatus> {
+    return waitSolanaTransaction(
+      txHash,
+      this.connection,
+      confirmations,
+      timeout
+    );
   }
 
   /**

@@ -141,6 +141,19 @@ export abstract class BasePreMarket<T, S extends string = string> {
   ): Promise<TransactionStatus>;
 
   /**
+   * Wait for a transaction to be confirmed
+   * @param txHash The transaction hash
+   * @param confirmations Number of confirmations to wait for
+   * @param timeout Timeout in milliseconds
+   * @returns Transaction status
+   */
+  abstract waitTransaction(
+    txHash: string,
+    confirmations?: number,
+    timeout?: number
+  ): Promise<TransactionStatus>;
+
+  /**
    * Check the allowance of tokens that a spender is allowed to use
    * @param spender The address of the spender
    * @param tokenAddress The address of the token

@@ -35,6 +35,104 @@ export async function getTransactionStatus(
 }
 
 /**
+ * Wait for a Solana transaction to be confirmed
+ * @param txHash The transaction hash
+ * @param connection The Solana connection
+ * @param confirmations Number of confirmations to wait for (default: 1)
+ * @param timeout Timeout in milliseconds (default: 60000 - 1 minute)
+ * @returns Transaction status
+ */
+export async function waitSolanaTransaction(
+  txHash: string,
+  connection: Connection,
+  confirmations: number = 1,
+  timeout: number = 60000
+): Promise<TransactionStatus> {
+  const startTime = Date.now();
+
+  // Create a commitment level based on confirmations
+  // For Solana, different commitment levels represent different confirmation requirements
+  let commitment: "processed" | "confirmed" | "finalized" = "processed";
+  if (confirmations >= 1) commitment = "confirmed";
+  if (confirmations > 1) commitment = "finalized"; // Finalized is the highest level of confirmation
+
+  try {
+    const blockhash = await connection.getLatestBlockhash(commitment);
+    // Wait for the transaction to be confirmed
+    const result = await connection.confirmTransaction(
+      {
+        signature: txHash,
+        blockhash: blockhash.blockhash,
+        lastValidBlockHeight: blockhash.lastValidBlockHeight,
+      },
+      commitment
+    );
+
+    if (result.value.err) {
+      return {
+        status: false,
+        confirmations: 0,
+        isCompleted: true,
+        attempts: 1,
+      };
+    }
+
+    // Check if we've reached the timeout
+    if (Date.now() - startTime > timeout) {
+      return {
+        status: null,
+        confirmations: 0,
+        isCompleted: false,
+        attempts: 1,
+      };
+    }
+
+    return {
+      status: true,
+      confirmations:
+        commitment === "finalized" ? 32 : commitment === "confirmed" ? 1 : 0,
+      isCompleted: true,
+      attempts: 1,
+    };
+  } catch (error) {
+    // If we reach timeout while waiting
+    if (Date.now() - startTime > timeout) {
+      return {
+        status: null,
+        confirmations: 0,
+        isCompleted: false,
+        attempts: 1,
+      };
+    }
+
+    // Check the transaction status in case of error
+    try {
+      const status = await connection.getSignatureStatus(txHash, {
+        searchTransactionHistory: true,
+      });
+
+      if (status && status.value) {
+        return {
+          status: status.value.err ? false : true,
+          confirmations: status.value.confirmations || 0,
+          isCompleted: status.value.confirmationStatus === "finalized",
+          attempts: 1,
+        };
+      }
+    } catch (statusError) {
+      // Ignore error from status check
+    }
+
+    return {
+      status: null,
+      confirmations: 0,
+      isCompleted: false,
+      attempts: 1,
+    };
+  }
+}
+
+/**
  * Sign and send a transaction
  * @param tx The transaction to sign and send
  * @param callbacks Optional callbacks for transaction events
