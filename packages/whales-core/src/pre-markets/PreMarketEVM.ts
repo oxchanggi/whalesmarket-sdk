@@ -294,8 +294,14 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
       ? "https://api.whales.market"
       : "https://api-dev.whales-market.site";
 
+    const seller = this.getPubkey();
+
+    if (!seller) {
+      throw new Error("Seller not found");
+    }
+
     const response = await fetch(
-      `${url}/v2/orders-by-offer-index?offerIndex=${offerId}&chainId=${chainId}&sortType=DESC`
+      `${url}/v2/orders-by-offer-index?offerIndex=${offerId}&chainId=${chainId}&seller=${seller}&sortType=DESC`
     );
 
     if (!response.ok) {
