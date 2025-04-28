@@ -203,11 +203,13 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
     let tx: ethers.PopulatedTransaction;
     // Build the transaction
     if (exToken.toLowerCase() === this.ETH_ADDRESS.toLowerCase()) {
-      tx = await this.contract.populateTransaction.matchOfferETH(
+      tx = await this.contract.populateTransaction.matchOffer(
         offerIdsBN,
         tokenId,
         totalAmountBN,
+        totalValueBN,
         offerType,
+        ethers.constants.AddressZero,
         newOfferFullMatch
       );
       // For ETH transactions, we need to set the value
@@ -311,15 +313,6 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
     const data = (await response.json()) as BatchOrderResponse;
     const orderIds = data.data.list.map((order) => order.order_index);
     return this.buildBatchSettleFilledsTx(orderIds);
-  }
-
-  /**
-   * Check if a token is accepted for trading
-   * @param token The token address
-   * @returns Whether the token is accepted
-   */
-  public async isAcceptedToken(token: string): Promise<boolean> {
-    return this.contract.isAcceptedToken(token);
   }
 
   /**
@@ -1047,57 +1040,6 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   }
 
   /**
-   * Check if an offer is a buy offer
-   * @param offerId The offer ID
-   * @returns True if the offer is a buy offer
-   */
-  public async isBuyOffer(offerId: ethers.BigNumberish): Promise<boolean> {
-    return this.contract.isBuyOffer(offerId);
-  }
-
-  /**
-   * Check if an offer is a sell offer
-   * @param offerId The offer ID
-   * @returns True if the offer is a sell offer
-   */
-  public async isSellOffer(offerId: ethers.BigNumberish): Promise<boolean> {
-    return this.contract.isSellOffer(offerId);
-  }
-
-  /**
-   * Get the status of an offer
-   * @param offerId The offer ID
-   * @returns The offer status
-   */
-  public async getOfferStatus(
-    offerId: ethers.BigNumberish
-  ): Promise<ethers.BigNumber> {
-    return this.contract.offerStatus(offerId);
-  }
-
-  /**
-   * Get the status of an order
-   * @param orderId The order ID
-   * @returns The order status
-   */
-  public async getOrderStatus(
-    orderId: ethers.BigNumberish
-  ): Promise<ethers.BigNumber> {
-    return this.contract.orderStatus(orderId);
-  }
-
-  /**
-   * Get the amount available for an offer
-   * @param offerId The offer ID
-   * @returns The available amount
-   */
-  public async getOfferAmountAvailable(
-    offerId: ethers.BigNumberish
-  ): Promise<ethers.BigNumber> {
-    return this.contract.offerAmountAvailable(offerId);
-  }
-
-  /**
    * Get the contract owner
    * @returns The contract owner address
    */
@@ -1234,5 +1176,9 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
         }`
       );
     }
+  }
+
+  isAcceptedToken(token: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
   }
 }

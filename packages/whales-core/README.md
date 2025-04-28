@@ -170,6 +170,30 @@ interface SignerType {
 }
 ```
 
+## Contract Types with TypeChain
+
+This package includes TypeScript types for Ethereum smart contracts generated using TypeChain.
+
+### Available Contracts
+
+- `PreMarket` - Pre-market trading contract
+
+### Usage
+
+```typescript
+import { ethers } from 'ethers';
+import { PreMarket__factory } from '@whalesmarket/core/dist/types/contracts';
+
+// Connect to existing contract
+const provider = new ethers.providers.JsonRpcProvider(rpcUrl);
+const preMarket = PreMarket__factory.connect(contractAddress, provider);
+
+// Use typed methods
+const config = await preMarket.config();
+```
+
+For more details, see the [Contract Types documentation](./src/types/contracts/README.md).
+
 ## License
 
 MIT 

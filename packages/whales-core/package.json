@@ -9,9 +9,10 @@
     "dist"
   ],
   "scripts": {
-    "build": "rollup -c && tsc --emitDeclarationOnly",
+    "build": "pnpm run generate-types && rollup -c && tsc --emitDeclarationOnly",
     "clean": "rimraf dist",
-    "prepublishOnly": "pnpm run clean && pnpm run build"
+    "prepublishOnly": "pnpm run clean && pnpm run build",
+    "generate-types": "typechain --target ethers-v5 --out-dir src/types/contracts 'src/abi/*.json'"
   },
   "dependencies": {
     "@solana/spl-token": "^0.3.9",
@@ -27,11 +28,14 @@
     "@rollup/plugin-json": "^6.1.0",
     "@rollup/plugin-node-resolve": "^13.3.0",
     "@solana/wallet-adapter-react": "^0.15.35",
+    "@typechain/ethers-v5": "^11.1.2",
     "@types/bn.js": "^5.1.6",
+    "ethers": "5",
     "rimraf": "^5.0.0",
     "rollup": "^2.76.0",
     "rollup-plugin-peer-deps-external": "^2.2.4",
     "rollup-plugin-typescript2": "^0.32.1",
+    "typechain": "^8.3.2",
     "typescript": "^4.7.4"
   }
 }
