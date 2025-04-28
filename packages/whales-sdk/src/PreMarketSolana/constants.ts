@@ -12,4 +12,4 @@ export const FEE_WALLET = "8FzAESKaw5yFZjDNNX7SU98gTEKZF6n57W94ehw38KRN";
 
 export const WEI6 = 1000000;
 
-export const IS_UNITTEST = false;
+export const IS_UNITTEST = true;

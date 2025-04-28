@@ -938,13 +938,7 @@ export type PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "roleAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "userOrOperator",
+          "name": "user",
           "isMut": true,
           "isSigner": true
         },
@@ -1025,13 +1019,7 @@ export type PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "roleAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "buyerOrOperator",
+          "name": "buyer",
           "isMut": true,
           "isSigner": true
         },
@@ -1128,13 +1116,7 @@ export type PreMarketType = {
           "isSigner": true
         },
         {
-          "name": "cancelRoleAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "buyerOrOperator",
+          "name": "buyer",
           "isMut": true,
           "isSigner": true
         },
@@ -3296,13 +3278,7 @@ export const IDL: PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "roleAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "userOrOperator",
+          "name": "user",
           "isMut": true,
           "isSigner": true
         },
@@ -3383,13 +3359,7 @@ export const IDL: PreMarketType = {
           "isSigner": false
         },
         {
-          "name": "roleAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "buyerOrOperator",
+          "name": "buyer",
           "isMut": true,
           "isSigner": true
         },
@@ -3486,13 +3456,7 @@ export const IDL: PreMarketType = {
           "isSigner": true
         },
         {
-          "name": "cancelRoleAccount",
-          "isMut": false,
-          "isSigner": false,
-          "isOptional": true
-        },
-        {
-          "name": "buyerOrOperator",
+          "name": "buyer",
           "isMut": true,
           "isSigner": true
         },

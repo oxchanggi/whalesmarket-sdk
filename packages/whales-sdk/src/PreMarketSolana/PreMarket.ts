@@ -1242,10 +1242,7 @@ export default class PreMarket {
     return finalTransaction;
   }
 
-  async cancelUnfilledOrder(
-    id: number,
-    cancelOperator: PublicKey | null = null
-  ): Promise<Transaction> {
+  async cancelUnfilledOrder(id: number): Promise<Transaction> {
     const orderAccountPubKey = getOrderAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -1296,25 +1293,6 @@ export default class PreMarket {
 
     const finalTransaction = new Transaction();
 
-    try {
-      await getAccount(
-        this.connection,
-        buyerExTokenAccountPubKey,
-        "confirmed",
-        exTokenInfo.value.owner
-      );
-    } catch (e) {
-      finalTransaction.add(
-        createAssociatedTokenAccountInstruction(
-          cancelOperator ?? orderAccount.buyer,
-          buyerExTokenAccountPubKey,
-          orderAccount.buyer,
-          offerAccount.exToken,
-          exTokenInfo.value.owner
-        )
-      );
-    }
-
     const transaction = await this.program.methods
       .cancelUnFilledOrder()
       .accounts({
@@ -1327,14 +1305,7 @@ export default class PreMarket {
         buyerExTokenAccount: buyerExTokenAccountPubKey,
         exTokenAccount: exTokenAccountPubKey,
         exToken: offerAccount.exToken,
-        roleAccount: cancelOperator
-          ? getRoleAccountPubKey(
-              this.program,
-              this.configAccountPubKey,
-              cancelOperator
-            )
-          : null,
-        buyerOrOperator: cancelOperator ?? orderAccount.buyer,
+        buyer: orderAccount.buyer,
         feeWallet: this.configAccount.feeWallet,
         configAuthority: this.configAccount.authority,
         tokenProgram: exTokenInfo.value.owner,
@@ -1343,10 +1314,7 @@ export default class PreMarket {
 
     finalTransaction.add(transaction);
 
-    if (
-      offerAccount.exToken.toString() == NATIVE_MINT.toString() &&
-      !cancelOperator
-    ) {
+    if (offerAccount.exToken.toString() == NATIVE_MINT.toString()) {
       const transactionUnWrapSol = new Transaction().add(
         ...(await buildInstructionsUnWrapSol(orderAccount.buyer))
       );
@@ -1361,8 +1329,7 @@ export default class PreMarket {
     id: number,
     settleVerifier: PublicKey,
     buyerFeeDiscount: BN,
-    sellerFeeDiscount: BN,
-    cancelOperator: PublicKey | null = null
+    sellerFeeDiscount: BN
   ): Promise<Transaction> {
     const roleAccountPubKey = getRoleAccountPubKey(
       this.program,
@@ -1437,7 +1404,7 @@ export default class PreMarket {
     } catch (e) {
       finalTransaction.add(
         createAssociatedTokenAccountInstruction(
-          cancelOperator ?? orderAccount.buyer,
+          orderAccount.buyer,
           feeExTokenAccountPubKey,
           this.configAccount.feeWallet,
           offerAccount.exToken,
@@ -1456,7 +1423,7 @@ export default class PreMarket {
     } catch (e) {
       finalTransaction.add(
         createAssociatedTokenAccountInstruction(
-          cancelOperator ?? orderAccount.buyer,
+          orderAccount.buyer,
           buyerExTokenAccountPubKey,
           orderAccount.buyer,
           offerAccount.exToken,
@@ -1503,14 +1470,7 @@ export default class PreMarket {
         exToken: offerAccount.exToken,
         settleOperator: settleVerifier,
         settleRoleAccount: roleAccountPubKey,
-        cancelRoleAccount: cancelOperator
-          ? getRoleAccountPubKey(
-              this.program,
-              this.configAccountPubKey,
-              cancelOperator
-            )
-          : null,
-        buyerOrOperator: cancelOperator ?? orderAccount.buyer,
+        buyer: orderAccount.buyer,
         feeWallet: this.configAccount.feeWallet,
         configAuthority: this.configAccount.authority,
         tokenProgram: exTokenInfo.value.owner,
@@ -1520,10 +1480,7 @@ export default class PreMarket {
 
     finalTransaction.add(transaction);
 
-    if (
-      offerAccount.exToken.toString() == NATIVE_MINT.toString() &&
-      !cancelOperator
-    ) {
+    if (offerAccount.exToken.toString() == NATIVE_MINT.toString()) {
       const transactionUnWrapSol = new Transaction().add(
         ...(await buildInstructionsUnWrapSol(orderAccount.buyer))
       );
@@ -1636,10 +1593,7 @@ export default class PreMarket {
     return transaction;
   }
 
-  async closeUnFullFilledOffer(
-    id: number,
-    cancelOperator: PublicKey | null = null
-  ): Promise<Transaction> {
+  async closeUnFullFilledOffer(id: number): Promise<Transaction> {
     const offerAccountPubKey = getOfferAccountPubKey(
       this.program,
       this.configAccountPubKey,
@@ -1685,25 +1639,6 @@ export default class PreMarket {
 
     const finalTransaction = new Transaction();
 
-    try {
-      await getAccount(
-        this.connection,
-        userExTokenAccountPubKey,
-        "confirmed",
-        exTokenInfo.value.owner
-      );
-    } catch (e) {
-      finalTransaction.add(
-        createAssociatedTokenAccountInstruction(
-          cancelOperator ?? user,
-          userExTokenAccountPubKey,
-          user,
-          offerAccount.exToken,
-          exTokenInfo.value.owner
-        )
-      );
-    }
-
     const transaction = await this.program.methods
       .closeUnFullFilledOffer()
       .accounts({
@@ -1715,14 +1650,7 @@ export default class PreMarket {
         userExTokenAccount: userExTokenAccountPubKey,
         exTokenAccount: exTokenAccountPubKey,
         exToken,
-        roleAccount: cancelOperator
-          ? getRoleAccountPubKey(
-              this.program,
-              this.configAccountPubKey,
-              cancelOperator
-            )
-          : null,
-        userOrOperator: cancelOperator ?? user,
+        user: user,
         feeWallet: this.configAccount.feeWallet,
         configAuthority: this.configAccount.authority,
         tokenProgram: exTokenInfo.value.owner,
@@ -1731,10 +1659,7 @@ export default class PreMarket {
 
     finalTransaction.add(transaction);
 
-    if (
-      offerAccount.exToken.toString() == NATIVE_MINT.toString() &&
-      !cancelOperator
-    ) {
+    if (offerAccount.exToken.toString() == NATIVE_MINT.toString()) {
       const transactionUnWrapSol = new Transaction().add(
         ...(await buildInstructionsUnWrapSol(user))
       );
