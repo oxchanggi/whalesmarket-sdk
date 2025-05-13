@@ -1,6 +1,6 @@
 {
   "name": "@whalesmarket/mobile-sdk",
-  "version": "0.1.36",
+  "version": "0.1.38",
   "description": "Mobile-friendly Whales SDK without Anchor dependency",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -39,7 +39,7 @@
   },
   "publishConfig": {
     "dependencies": {
-      "@whalesmarket/core": "^0.1.56"
+      "@whalesmarket/core": "^0.1.58"
     }
   }
 }

@@ -1,6 +1,6 @@
 {
   "name": "@whalesmarket/core",
-  "version": "0.1.56",
+  "version": "0.1.58",
   "description": "Core functionality for Whales SDK",
   "main": "dist/index.js",
   "module": "dist/index.esm.js",
@@ -9,7 +9,7 @@
     "dist"
   ],
   "scripts": {
-    "build": "pnpm run generate-types && rollup -c && tsc --emitDeclarationOnly",
+    "build": "rollup -c && tsc --emitDeclarationOnly",
     "clean": "rimraf dist",
     "prepublishOnly": "pnpm run clean && pnpm run build",
     "generate-types": "typechain --target ethers-v5 --out-dir src/types/contracts 'src/abi/*.json'"

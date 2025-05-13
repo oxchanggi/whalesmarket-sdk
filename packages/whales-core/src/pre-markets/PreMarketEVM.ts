@@ -12,7 +12,8 @@ import {
 } from "../base/BasePreMarket";
 import { getTokenDecimals, parseTokenAmount } from "../utils/token";
 import { TokenEVM } from "../tokens/TokenEVM";
-
+// @ts-ignore
+import MatchingOrderAbi from "../abi/MatchingOrderAbi.json";
 interface BatchOrderResponse {
   data: {
     list: Array<{
@@ -29,6 +30,7 @@ interface BatchOrderResponse {
  */
 export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
   private contract: PreMarket;
+  private matchOfferContract: ethers.Contract;
   // ETH address constant (address(0))
   private readonly ETH_ADDRESS = "0x0000000000000000000000000000000000000000";
   private tokens: TokenEVM;
@@ -41,7 +43,8 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
    */
   constructor(
     contractAddress: string,
-    signerOrProvider: ethers.Signer | ethers.providers.Provider
+    signerOrProvider: ethers.Signer | ethers.providers.Provider,
+    matchOfferContractAddress?: string
   ) {
     super();
     this.contract = PreMarket__factory.connect(
@@ -49,6 +52,15 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
       signerOrProvider
     );
     this.tokens = new TokenEVM(signerOrProvider as ethers.providers.Provider);
+    if (!matchOfferContractAddress)
+      throw new Error("matchOfferContractAddress is required");
+    if (!matchOfferContractAddress)
+      throw new Error("matchOfferContractAddress cannot be the ETH address");
+    this.matchOfferContract = new ethers.Contract(
+      matchOfferContractAddress,
+      MatchingOrderAbi,
+      signerOrProvider
+    );
   }
 
   /**
@@ -201,29 +213,27 @@ export class PreMarketEVM extends BasePreMarket<ethers.PopulatedTransaction> {
     offerType === 0 ? (offerType = 1) : (offerType = 2);
 
     let tx: ethers.PopulatedTransaction;
+
     // Build the transaction
+    const _params = {
+      offerIds: offerIdsBN,
+      tokenId: tokenId,
+      totalAmount: totalAmountBN,
+      totalValue: totalValueBN,
+      offerType: offerType,
+      exToken:
+        exToken.toLowerCase() === this.ETH_ADDRESS.toLowerCase()
+          ? ethers.constants.AddressZero
+          : exToken,
+      newOfferFullMatch: newOfferFullMatch,
+    };
+
+    // Gọi với một tham số duy nhất - đối tượng params
+    tx = await this.matchOfferContract.populateTransaction.matchOffer(_params);
+
+    // Cho giao dịch ETH, vẫn phải set value
     if (exToken.toLowerCase() === this.ETH_ADDRESS.toLowerCase()) {
-      tx = await this.contract.populateTransaction.matchOffer(
-        offerIdsBN,
-        tokenId,
-        totalAmountBN,
-        totalValueBN,
-        offerType,
-        ethers.constants.AddressZero,
-        newOfferFullMatch
-      );
-      // For ETH transactions, we need to set the value
       tx.value = totalValueBN;
-    } else {
-      tx = await this.contract.populateTransaction.matchOffer(
-        offerIdsBN,
-        tokenId,
-        totalAmountBN,
-        totalValueBN,
-        offerType,
-        exToken,
-        newOfferFullMatch
-      );
     }
 
     return tx;
