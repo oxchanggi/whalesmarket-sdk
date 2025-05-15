@@ -10,7 +10,7 @@ import {
 import { JitoJsonRpcClient } from "../jito-sdk";
 import PreMarket from "./PreMarket";
 import {
-  WhalesMarketWrapper as PreMarketWrapperType,
+  MatchingOrder as MatchingOrderType,
   IDL,
 } from "./idl/whales_market_wrapper";
 import * as anchor from "@coral-xyz/anchor";
@@ -18,7 +18,6 @@ import {
   getExTokenAccountPubKey,
   getOfferAccountPubKey,
   getOrderAccountPubKey,
-  getTokenConfigAccountPubKey,
   getVaultTokenAccountPubKey,
 } from "./accounts";
 import { getAssociatedTokenAddressSync, NATIVE_MINT } from "@solana/spl-token";
@@ -32,13 +31,14 @@ export const MAINNET = {
 };
 
 export const DEVNET = {
-  PROGRAM_ID: "8Yj95N7hy77zspBjUK3FK5Phs9gxKn1HwTgW5ptxKShk",
+  // PROGRAM_ID: "8Yj95N7hy77zspBjUK3FK5Phs9gxKn1HwTgW5ptxKShk",
+  PROGRAM_ID: "Nka4sNRbNac2ts8fkRd8yMsyuBFozSGKuUgmoDbKjWW",
 };
 
 export class PreMarketWrapper {
   preMarketSdk: PreMarket;
   jito: JitoJsonRpcClient;
-  wrapperProgram: anchor.Program<PreMarketWrapperType>;
+  wrapperProgram: anchor.Program<MatchingOrderType>;
 
   constructor(preMarketSdk: PreMarket) {
     this.preMarketSdk = preMarketSdk;
@@ -113,11 +113,11 @@ export class PreMarketWrapper {
       newOfferId
     );
 
-    const tokenConfigAccountPubKey = getTokenConfigAccountPubKey(
-      this.preMarketSdk.program,
-      this.preMarketSdk.configAccountPubKey,
-      tokenId
-    );
+    const offerAccount = await this.preMarketSdk.fetchOfferAccount(offerIds[0]);
+
+    const tokenConfigAccountPubKey = offerAccount.tokenConfig;
+
+    let exToken = offerAccount.exToken;
 
     if (exToken.toString() == PublicKey.default.toString()) {
       exToken = NATIVE_MINT;

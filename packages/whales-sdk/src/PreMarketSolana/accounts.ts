@@ -37,7 +37,7 @@ export const getTokenConfigAccountPubKey = (
     [
       getSeed("TOKEN_PDA_SEED", program),
       configAccount.toBuffer(),
-      toBuffer(new anchor.BN(id)),
+      toBuffer(new anchor.BN(id), "be", 2),
     ],
     program.programId
   )[0];

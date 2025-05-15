@@ -1670,6 +1670,244 @@ export default class PreMarket {
     return finalTransaction;
   }
 
+  async forceCloseUnFullFilledOffer(
+    id: number,
+    operator: PublicKey
+  ): Promise<Transaction> {
+    const offerAccountPubKey = getOfferAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      id
+    );
+
+    const offerAccount = await this.fetchOfferAccount(id);
+    const exToken = offerAccount.exToken;
+
+    const vaultExTokenAccountPubKey = getVaultTokenAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      exToken
+    );
+
+    const exTokenInfo =
+      await this.program.provider.connection.getParsedAccountInfo(exToken);
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${exToken.toString()}`);
+    }
+
+    const finalTransaction = new Transaction();
+
+    const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
+      exToken,
+      this.configAccount.feeWallet,
+      false,
+      exTokenInfo.value.owner
+    );
+
+    try {
+      await getAccount(
+        this.connection,
+        feeExTokenAccountPubKey,
+        "confirmed",
+        exTokenInfo.value.owner
+      );
+    } catch (e) {
+      finalTransaction.add(
+        createAssociatedTokenAccountInstruction(
+          operator,
+          feeExTokenAccountPubKey,
+          this.configAccount.feeWallet,
+          exToken,
+          exTokenInfo.value.owner
+        )
+      );
+    }
+
+    const userExTokenAccountPubKey = await getAssociatedTokenAddress(
+      exToken,
+      offerAccount.authority,
+      false,
+      exTokenInfo.value.owner
+    );
+
+    try {
+      await getAccount(
+        this.connection,
+        userExTokenAccountPubKey,
+        "confirmed",
+        exTokenInfo.value.owner
+      );
+    } catch (e) {
+      finalTransaction.add(
+        createAssociatedTokenAccountInstruction(
+          operator,
+          userExTokenAccountPubKey,
+          offerAccount.authority,
+          exToken,
+          exTokenInfo.value.owner
+        )
+      );
+    }
+
+    const exTokenAccountPubKey = getExTokenAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      exToken
+    );
+
+    const roleAccountPubKey = getRoleAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      operator
+    );
+
+    const transaction = await this.program.methods
+      .forceCloseUnFullFilledOffer()
+      .accounts({
+        offerAccount: offerAccountPubKey,
+        vaultExTokenAccount: vaultExTokenAccountPubKey,
+        configAccount: this.configAccountPubKey,
+        tokenConfigAccount: offerAccount.tokenConfig,
+        feeExTokenAccount: feeExTokenAccountPubKey,
+        userExTokenAccount: userExTokenAccountPubKey,
+        exTokenAccount: exTokenAccountPubKey,
+        exToken: exToken,
+        roleAccount: roleAccountPubKey,
+        operator: operator,
+        feeWallet: this.configAccount.feeWallet,
+        configAuthority: this.configAccount.authority,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: exTokenInfo.value.owner,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .transaction();
+
+    finalTransaction.add(transaction);
+    return finalTransaction;
+  }
+
+  async forceCancelUnFilledOrder(
+    id: number,
+    operator: PublicKey
+  ): Promise<Transaction> {
+    const orderAccountPubKey = getOrderAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      id
+    );
+
+    const orderAccount = await this.fetchOrderAccount(id);
+    const offerAccount = await this.program.account.offerAccount.fetch(
+      orderAccount.offer
+    );
+
+    const tokenConfigAccountPubKey = offerAccount.tokenConfig;
+    const exToken = offerAccount.exToken;
+
+    const vaultExTokenAccountPubKey = getVaultTokenAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      exToken
+    );
+
+    const exTokenInfo =
+      await this.program.provider.connection.getParsedAccountInfo(exToken);
+    if (!exTokenInfo.value) {
+      throw new Error(`Token not found: ${exToken.toString()}`);
+    }
+
+    const finalTransaction = new Transaction();
+
+    const feeExTokenAccountPubKey = await getAssociatedTokenAddress(
+      exToken,
+      this.configAccount.feeWallet,
+      false,
+      exTokenInfo.value.owner
+    );
+
+    try {
+      await getAccount(
+        this.connection,
+        feeExTokenAccountPubKey,
+        "confirmed",
+        exTokenInfo.value.owner
+      );
+    } catch (e) {
+      finalTransaction.add(
+        createAssociatedTokenAccountInstruction(
+          operator,
+          feeExTokenAccountPubKey,
+          this.configAccount.feeWallet,
+          exToken,
+          exTokenInfo.value.owner
+        )
+      );
+    }
+
+    const buyerExTokenAccountPubKey = await getAssociatedTokenAddress(
+      exToken,
+      orderAccount.buyer,
+      false,
+      exTokenInfo.value.owner
+    );
+
+    try {
+      await getAccount(
+        this.connection,
+        buyerExTokenAccountPubKey,
+        "confirmed",
+        exTokenInfo.value.owner
+      );
+    } catch (e) {
+      finalTransaction.add(
+        createAssociatedTokenAccountInstruction(
+          operator,
+          buyerExTokenAccountPubKey,
+          orderAccount.buyer,
+          exToken,
+          exTokenInfo.value.owner
+        )
+      );
+    }
+
+    const exTokenAccountPubKey = getExTokenAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      exToken
+    );
+
+    const roleAccountPubKey = getRoleAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      operator
+    );
+
+    const transaction = await this.program.methods
+      .forceCancelUnFilledOrder()
+      .accounts({
+        orderAccount: orderAccountPubKey,
+        offerAccount: orderAccount.offer,
+        vaultExTokenAccount: vaultExTokenAccountPubKey,
+        configAccount: this.configAccountPubKey,
+        tokenConfigAccount: tokenConfigAccountPubKey,
+        feeExTokenAccount: feeExTokenAccountPubKey,
+        buyerExTokenAccount: buyerExTokenAccountPubKey,
+        exTokenAccount: exTokenAccountPubKey,
+        exToken: exToken,
+        roleAccount: roleAccountPubKey,
+        operator: operator,
+        feeWallet: this.configAccount.feeWallet,
+        configAuthority: this.configAccount.authority,
+        systemProgram: SystemProgram.programId,
+        tokenProgram: exTokenInfo.value.owner,
+        associatedTokenProgram: ASSOCIATED_TOKEN_PROGRAM_ID,
+      })
+      .transaction();
+
+    finalTransaction.add(transaction);
+    return finalTransaction;
+  }
+
   private async getProgramSignatures(params?: {
     before?: string;
     until?: string;
@@ -1795,5 +2033,30 @@ export default class PreMarket {
       limit: 1,
     });
     return signatures.length > 0 ? signatures[0] : undefined;
+  }
+
+  async transferOrder(
+    orderId: number,
+    buyerOrSeller: PublicKey,
+    newBuyerOrSeller: PublicKey
+  ): Promise<Transaction> {
+    const orderAccountPubKey = getOrderAccountPubKey(
+      this.program,
+      this.configAccountPubKey,
+      orderId
+    );
+
+    const transaction = await this.program.methods
+      .transferOrder()
+      .accounts({
+        orderAccount: orderAccountPubKey,
+        configAccount: this.configAccountPubKey,
+        configAuthority: this.configAccount.authority,
+        buyerOrSeller: buyerOrSeller,
+        newBuyerOrSeller: newBuyerOrSeller,
+      })
+      .transaction();
+
+    return transaction;
   }
 }

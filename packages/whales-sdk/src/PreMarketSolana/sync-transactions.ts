@@ -145,6 +145,27 @@ const parseCloseOffer = (events: any[]) => {
     });
 };
 
+const parseTransferOrder = (events: any[]) => {
+  return events
+    .filter((event) => event?.name == 'TransferOrderEvent')
+    .map((event) => {
+      const data = event?.data;
+      return {
+        tx_hash: event.tx_hash,
+        block_number: event.block_number,
+        event_name: 'TransferOrder',
+        contract_address: PROGRAM_ID,
+        order_id: data?.order_id?.toNumber(),
+        order: data?.order?.toString(),
+        config: data?.config?.toString(),
+        buyer: data?.buyer?.toString(),
+        seller: data?.seller?.toString(),
+        is_buyer: data?.is_buyer,
+      };
+    });
+};
+
+
 export {
   parseNewToken,
   parseUpdateTokenAddress,
@@ -154,4 +175,5 @@ export {
   parseCreateOrder,
   parseSettleOrder,
   parseCancelOrder,
+  parseTransferOrder,
 };
