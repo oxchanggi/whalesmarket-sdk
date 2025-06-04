@@ -7,7 +7,6 @@ import {
   PublicKey,
   Transaction,
 } from "@solana/web3.js";
-import { JitoJsonRpcClient } from "../jito-sdk";
 import PreMarket from "./PreMarket";
 import {
   MatchingOrder as MatchingOrderType,
@@ -18,6 +17,7 @@ import {
   getExTokenAccountPubKey,
   getOfferAccountPubKey,
   getOrderAccountPubKey,
+  getTokenConfigAccountPubKey,
   getVaultTokenAccountPubKey,
 } from "./accounts";
 import { getAssociatedTokenAddressSync, NATIVE_MINT } from "@solana/spl-token";
@@ -37,14 +37,10 @@ export const DEVNET = {
 
 export class PreMarketWrapper {
   preMarketSdk: PreMarket;
-  jito: JitoJsonRpcClient;
   wrapperProgram: anchor.Program<MatchingOrderType>;
 
   constructor(preMarketSdk: PreMarket) {
     this.preMarketSdk = preMarketSdk;
-    this.jito = new JitoJsonRpcClient(
-      "https://mainnet.block-engine.jito.wtf/api/v1"
-    );
 
     const wrapperProgramId = this.preMarketSdk.connection.rpcEndpoint.includes(
       "mainnet"
@@ -113,15 +109,19 @@ export class PreMarketWrapper {
       newOfferId
     );
 
-    const offerAccount = await this.preMarketSdk.fetchOfferAccount(offerIds[0]);
+    // const offerAccount = await this.preMarketSdk.fetchOfferAccount(offerIds[0]);
 
-    const tokenConfigAccountPubKey = offerAccount.tokenConfig;
+    const tokenConfigAccountPubKey = getTokenConfigAccountPubKey(
+      this.preMarketSdk.program,
+      this.preMarketSdk.configAccountPubKey,
+      tokenId
+    );
 
-    let exToken = offerAccount.exToken;
+    // let exToken = offerAccount.exToken;
 
-    if (exToken.toString() == PublicKey.default.toString()) {
-      exToken = NATIVE_MINT;
-    }
+    // if (exToken.toString() == PublicKey.default.toString()) {
+    //   exToken = NATIVE_MINT;
+    // }
     const vaultTokenAccountPubKey = getVaultTokenAccountPubKey(
       this.preMarketSdk.program,
       this.preMarketSdk.configAccountPubKey,
@@ -170,10 +170,21 @@ export class PreMarketWrapper {
       .transaction();
 
     if (exToken.toString() == NATIVE_MINT.toString()) {
-      const amountTransfer = new anchor.BN(matchPrice)
-        .mul(new anchor.BN(totalAmount))
-        .div(new anchor.BN(WEI6))
-        .toNumber();
+      const tokenConfig =
+        await this.preMarketSdk.program.account.tokenConfigAccount.fetch(
+          tokenConfigAccountPubKey
+        );
+      const amountTransfer =
+        offerType === "sell"
+          ? new anchor.BN(matchPrice)
+              .mul(new anchor.BN(totalAmount))
+              .div(new anchor.BN(WEI6))
+              .toNumber()
+          : new anchor.BN(matchPrice)
+              .mul(new anchor.BN(totalAmount))
+              .mul(new anchor.BN(tokenConfig.pledgeRate))
+              .div(new anchor.BN(WEI6 * WEI6))
+              .toNumber();
 
       const instructions = await buildInstructionsWrapSol(
         this.preMarketSdk.connection,
