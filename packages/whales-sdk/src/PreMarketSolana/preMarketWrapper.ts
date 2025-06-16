@@ -27,7 +27,7 @@ import { BN } from "bn.js";
 import { bs58 } from "@coral-xyz/anchor/dist/cjs/utils/bytes";
 
 export const MAINNET = {
-  PROGRAM_ID: "8Yj95N7hy77zspBjUK3FK5Phs9gxKn1HwTgW5ptxKShk", // TODO: change to mainnet, temporarily used devnet
+  PROGRAM_ID: "ERoEjSsN5UJeSQj9ooSzbB6xMqYFZW3hg6RfNy961xUm",
 };
 
 export const DEVNET = {
